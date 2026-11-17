@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wordbank — my vocab & expressions</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFFFFF;
+    --surface2: #F0EDE7;
+    --border: #E2DDD6;
+    --border-strong: #C8C2BA;
+    --text: #1A1816;
+    --text-muted: #7A746C;
+    --text-faint: #A8A29C;
+    --accent: #2D6A4F;
+    --accent-bg: #EAF4EF;
+    --accent-border: #A8D5BB;
+    --tag-vocab-bg: #EEF2FF;
+    --tag-vocab-text: #3730A3;
+    --tag-vocab-border: #C7D2FE;
+    --tag-expr-bg: #FFF7ED;
+    --tag-expr-text: #92400E;
+    --tag-expr-border: #FED7AA;
+    --done-bg: #F0FDF4;
+    --done-text: #14532D;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  .header-stats {
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 1.25rem;
+  }
+
+  .header-stats strong { color: var(--text); font-weight: 500; }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  @media (max-width: 750px) {
+    main { grid-template-columns: 1fr; }
+    header { padding: 1rem; }
+    .header-stats { display: none; }
+  }
+
+  .column-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .column-header h2 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+  }
+
+  .column-header .count {
+    font-size: 12px;
+    background: var(--surface2);
+    color: var(--text-muted);
+    padding: 1px 8px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  /* ADD FORM */
+  .add-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1rem;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    align-items: flex-start;
+  }
+
+  .form-row input, .form-row select, .form-row textarea {
+    font-family: inherit;
+    font-size: 14px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 11px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+
+  .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+    border-color: var(--accent);
+  }
+
+  .form-row textarea {
+    resize: vertical;
+    min-height: 64px;
+    line-height: 1.5;
+  }
+
+  .form-row select {
+    width: auto;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  label.form-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .form-field { flex: 1; }
+
+  .btn-add {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 9px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    transition: opacity 0.15s;
+    margin-top: 2px;
+  }
+
+  .btn-add:hover { opacity: 0.88; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.1rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 0.6rem;
+    transition: border-color 0.15s;
+    position: relative;
+  }
+
+  .card:hover { border-color: var(--border-strong); }
+
+  .card.done {
+    background: var(--done-bg);
+    border-color: #BBF7D0;
+    opacity: 0.85;
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .card-word {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    color: var(--text);
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  .btn-icon {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.12s;
+    white-space: nowrap;
+  }
+
+  .btn-icon:hover {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  .btn-promote {
+    border-color: var(--accent-border);
+    color: var(--accent);
+    background: var(--accent-bg);
+  }
+
+  .btn-promote:hover {
+    background: #d0ead9;
+    border-color: var(--accent);
+  }
+
+  .btn-unlearn {
+    border-color: var(--tag-expr-border);
+    color: var(--tag-expr-text);
+    background: var(--tag-expr-bg);
+  }
+
+  .btn-delete {
+    border-color: #FCA5A5;
+    color: #B91C1C;
+    background: #FFF5F5;
+  }
+
+  .btn-delete:hover { background: #FEE2E2; }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid;
+    margin-bottom: 6px;
+  }
+
+  .tag.vocab {
+    background: var(--tag-vocab-bg);
+    color: var(--tag-vocab-text);
+    border-color: var(--tag-vocab-border);
+  }
+
+  .tag.expression {
+    background: var(--tag-expr-bg);
+    color: var(--tag-expr-text);
+    border-color: var(--tag-expr-border);
+  }
+
+  .card-definition {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+
+  .card-phrase {
+    font-size: 13px;
+    color: var(--text);
+    background: var(--bg);
+    border-left: 2.5px solid var(--accent-border);
+    padding: 6px 10px;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  .card-date {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 8px;
+  }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--text-faint);
+    font-size: 14px;
+  }
+
+  .empty span { font-size: 28px; display: block; margin-bottom: 8px; }
+
+  /* SEARCH BAR */
+  .search-bar {
+    margin-bottom: 1.5rem;
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .search-bar input {
+    font-family: inherit;
+    font-size: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 14px;
+    background: var(--surface);
+    color: var(--text);
+    outline: none;
+    flex: 1;
+    transition: border-color 0.15s;
+  }
+
+  .search-bar input:focus { border-color: var(--accent); }
+
+  .filter-btns { display: flex; gap: 6px; }
+
+  .filter-btn {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 7px 13px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+
+  .filter-btn.active {
+    background: var(--text);
+    color: #fff;
+    border-color: var(--text);
+  }
+
+  .filter-btn.vocab-f.active {
+    background: var(--tag-vocab-text);
+    border-color: var(--tag-vocab-text);
+  }
+
+  .filter-btn.expr-f.active {
+    background: var(--tag-expr-text);
+    border-color: var(--tag-expr-text);
+  }
+
+  /* TAB NAV */
+  .tab-nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 2rem;
+  }
+  .tab-btn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.12s;
+    margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* TABLE VIEW */
+  .table-wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+  .table-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .table-toolbar input {
+    font-family: inherit; font-size: 13px; border: 1px solid var(--border);
+    border-radius: 7px; padding: 7px 12px; background: var(--surface);
+    color: var(--text); outline: none; width: 220px; transition: border-color 0.15s;
+  }
+  .table-toolbar input:focus { border-color: var(--accent); }
+  .table-toolbar select {
+    font-family: inherit; font-size: 13px; border: 1px solid var(--border);
+    border-radius: 7px; padding: 7px 10px; background: var(--surface); color: var(--text); outline: none; cursor: pointer;
+  }
+  .btn-export {
+    margin-left: auto; font-family: inherit; font-size: 13px; font-weight: 500;
+    padding: 7px 14px; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-muted); cursor: pointer; transition: all 0.12s;
+  }
+  .btn-export:hover { background: var(--surface2); color: var(--text); border-color: var(--border-strong); }
+  .sheet-outer { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .sheet {
+    width: 100%; border-collapse: collapse; font-size: 13.5px;
+    background: var(--surface); table-layout: fixed; min-width: 900px;
+  }
+  .sheet thead { background: var(--surface2); }
+  .sheet th {
+    text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text-muted); padding: 10px 12px;
+    border-bottom: 1px solid var(--border); cursor: pointer; user-select: none;
+    white-space: nowrap; transition: color 0.1s;
+  }
+  .sheet th:hover { color: var(--text); }
+  .sheet th.sorted { color: var(--accent); }
+  .sort-arrow { display: inline-block; margin-left: 4px; opacity: 0.35; font-size: 10px; }
+  .sheet th.sorted .sort-arrow { opacity: 1; }
+  .sheet td {
+    padding: 9px 12px; border-bottom: 1px solid var(--border);
+    vertical-align: top; color: var(--text); line-height: 1.5;
+  }
+  .sheet tr:last-child td { border-bottom: none; }
+  .sheet tbody tr:hover td { background: #F9F8F5; }
+  .sheet td.col-word { font-weight: 600; font-size: 14px; }
+  .sheet td.col-def { color: var(--text-muted); }
+  .sheet td.col-phrase { font-style: italic; }
+  .sheet td.col-date { color: var(--text-faint); font-size: 12px; white-space: nowrap; }
+  .col-w-word   { width: 120px; }
+  .col-w-tag    { width: 100px; }
+  .col-w-status { width: 105px; }
+  .col-w-def    { width: 230px; }
+  .col-w-phrase { width: 250px; }
+  .col-w-date   { width: 95px; }
+  .col-w-act    { width: 75px; }
+  .status-pill {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 9px; border-radius: 20px; border: 1px solid;
+  }
+  .status-pill.learning  { background: #FFF7ED; color: #92400E; border-color: #FED7AA; }
+  .status-pill.remembered{ background: #F0FDF4; color: #14532D; border-color: #BBF7D0; }
+  .table-empty { text-align: center; padding: 3rem; color: var(--text-faint); font-size: 14px; }
+  .tbl-act-btn {
+    font-family: inherit; font-size: 11px; border: 1px solid var(--border);
+    border-radius: 5px; padding: 3px 7px; cursor: pointer; background: none;
+    color: var(--text-muted); transition: all 0.12s; white-space: nowrap; display: inline-block; margin: 1px;
+  }
+  .tbl-act-btn:hover { background: var(--surface2); color: var(--text); }
+  .tbl-del { border-color: #FCA5A5; color: #B91C1C; background: #FFF5F5; }
+  .tbl-del:hover { background: #FEE2E2; }
+
+  /* VOICE BUTTONS */
+  .btn-speak {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.12s;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .btn-speak:hover {
+    background: #EEF2FF;
+    border-color: #C7D2FE;
+    color: #3730A3;
+  }
+
+  .btn-speak.speaking {
+    background: #EEF2FF;
+    border-color: #818CF8;
+    color: #3730A3;
+    animation: pulse-speak 1s ease-in-out infinite;
+  }
+
+  @keyframes pulse-speak {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .card-phrase-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-top: 6px;
+  }
+
+  .card-phrase-row .card-phrase {
+    margin-top: 0;
+    flex: 1;
+  }
+
+  .card-voice-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  /* VOICE SETTINGS */
+  .voice-settings-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .voice-settings-btn:hover {
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  .voice-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    padding: 1rem;
+    width: 280px;
+    z-index: 200;
+  }
+
+  .voice-panel.open { display: block; }
+
+  .voice-panel label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 5px;
+    margin-top: 10px;
+  }
+
+  .voice-panel label:first-child { margin-top: 0; }
+
+  .voice-panel select, .voice-panel input[type=range] {
+    width: 100%;
+    font-family: inherit;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 9px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+  }
+
+  .voice-panel input[type=range] {
+    padding: 4px 0;
+    border: none;
+    accent-color: var(--accent);
+  }
+
+  .voice-panel-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+
+  .voice-panel-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: var(--text);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 999;
+    transition: transform 0.22s ease;
+    pointer-events: none;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>word<span>bank</span></h1>
+  <div class="header-right">
+    <div class="header-stats">
+      <div>learning: <strong id="stat-learning">0</strong></div>
+      <div>remembered: <strong id="stat-remembered">0</strong></div>
+      <div>total: <strong id="stat-total">0</strong></div>
+    </div>
+    <button class="voice-settings-btn" onclick="importFriendsIdioms()" id="import-btn" title="Import 441 idioms from Learn Idioms with Friends PDF">
+      📚 Import Friends Idioms
+    </button>
+    <button class="voice-settings-btn" onclick="importRealLifeIdioms()" id="import-btn2" title="Import 95 expressions from Real Life 101 eBook">
+      📖 Import Real Life 101
+    </button>
+    <button class="voice-settings-btn" onclick="toggleReadPanel()" id="read-btn">
+      ▶ Read Aloud
+    </button>
+    <button class="voice-settings-btn" onclick="toggleVoicePanel()" id="voice-btn">
+      🔊 Voice
+    </button>
+    <div class="voice-panel" id="voice-panel">
+      <div class="voice-panel-title">Voice settings</div>
+      <label>Voice</label>
+      <select id="voice-select"></select>
+      <label>Speed</label>
+      <input type="range" id="voice-rate" min="0.5" max="1.5" step="0.05" value="0.9">
+      <div class="voice-panel-row">
+        <span>Slower</span><span id="rate-val">0.9×</span><span>Faster</span>
+      </div>
+      <label>Pitch</label>
+      <input type="range" id="voice-pitch" min="0.5" max="2" step="0.1" value="1">
+      <div class="voice-panel-row">
+        <span>Lower</span><span id="pitch-val">1.0</span><span>Higher</span>
+      </div>
+    </div>
+    <!-- Read Aloud Panel -->
+    <div class="voice-panel" id="read-panel" style="min-width:260px">
+      <div class="voice-panel-title">Read aloud — learning only</div>
+      <label style="font-size:0.8rem;color:var(--label)">What to read</label>
+      <div style="display:flex;flex-direction:column;gap:4px;margin:4px 0 10px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:normal;color:var(--fg)"><input type="checkbox" id="read-word" checked> Word / Expression</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:normal;color:var(--fg)"><input type="checkbox" id="read-def"> Definition</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;font-weight:normal;color:var(--fg)"><input type="checkbox" id="read-phrase"> Example phrase</label>
+      </div>
+      <label style="font-size:0.8rem;color:var(--label)">Pause between entries</label>
+      <input type="range" id="read-pause" min="1" max="8" step="0.5" value="2">
+      <div class="voice-panel-row"><span>1 s</span><span id="pause-val">2 s</span><span>8 s</span></div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button id="read-play-btn" class="voice-settings-btn" style="flex:1" onclick="startReadAloud()">▶ Start</button>
+        <button id="read-stop-btn" class="voice-settings-btn" style="flex:1;display:none" onclick="stopReadAloud()">■ Stop</button>
+      </div>
+      <div id="read-status" style="font-size:0.78rem;color:var(--label);margin-top:6px;min-height:16px"></div>
+    </div>
+  </div>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('cards', this)">🗂 Cards</button>
+  <button class="tab-btn" onclick="switchTab('table', this)">📊 Table</button>
+</nav>
+
+<div class="tab-pane active" id="pane-cards">
+<main>
+  <div class="search-bar">
+    <input type="text" id="search-input" placeholder="Search words, definitions, phrases…">
+    <div class="filter-btns">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn vocab-f" data-filter="vocab">#vocab</button>
+      <button class="filter-btn expr-f" data-filter="expression">#expression</button>
+    </div>
+  </div>
+
+  <!-- LEFT COLUMN: LEARNING -->
+  <div id="col-learning">
+    <div class="column-header">
+      <h2>Learning</h2>
+      <span class="count" id="count-learning">0</span>
+    </div>
+
+    <!-- ADD FORM -->
+    <div class="add-form">
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Word or expression</label>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input type="text" id="input-word" placeholder='e.g. estimate or "break up"' autocomplete="off" style="flex:1;">
+            <button id="btn-lookup" onclick="triggerLookup()" title="Auto-fill definition & example" style="flex-shrink:0;background:var(--accent);color:#fff;border:none;border-radius:7px;padding:8px 13px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:opacity 0.15s;">✦ Look up</button>
+          </div>
+          <div id="lookup-status" style="font-size:12px;margin-top:5px;min-height:16px;color:var(--accent);"></div>
+        </div>
+        <div style="flex-shrink:0; padding-top: 20px;">
+          <select id="input-type">
+            <option value="vocab">#vocab</option>
+            <option value="expression">#expression</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Definition</label>
+          <textarea id="input-definition" placeholder="What does it mean?"></textarea>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Example phrase</label>
+          <input type="text" id="input-phrase" placeholder='e.g. "I'd estimate it'll take two hours."'>
+        </div>
+      </div>
+      <div class="form-row">
+        <button class="btn-add" onclick="addEntry()">+ Add to learning list</button>
+      </div>
+    </div>
+
+    <div id="learning-list"></div>
+  </div>
+
+  <!-- RIGHT COLUMN: REMEMBERED -->
+  <div id="col-remembered">
+    <div class="column-header">
+      <h2>Remembered ✓</h2>
+      <span class="count" id="count-remembered">0</span>
+    </div>
+    <div id="remembered-list"></div>
+  </div>
+</main>
+</div>
+
+<div class="tab-pane" id="pane-table">
+  <div class="table-wrap">
+    <div class="table-toolbar">
+      <input type="text" id="tbl-search" placeholder="Search table…">
+      <select id="tbl-filter-type">
+        <option value="all">All tags</option>
+        <option value="vocab">#vocab</option>
+        <option value="expression">#expression</option>
+      </select>
+      <select id="tbl-filter-status">
+        <option value="all">All status</option>
+        <option value="learning">Learning</option>
+        <option value="remembered">Remembered</option>
+      </select>
+      <button class="btn-export" onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
+    <div class="sheet-outer">
+      <table class="sheet" id="sheet">
+        <thead>
+          <tr>
+            <th class="col-w-word sorted" data-col="word" onclick="sortTable('word')">Word <span class="sort-arrow">↕</span></th>
+            <th class="col-w-tag" data-col="type" onclick="sortTable('type')">Tag <span class="sort-arrow">↕</span></th>
+            <th class="col-w-status" data-col="status" onclick="sortTable('status')">Status <span class="sort-arrow">↕</span></th>
+            <th class="col-w-def" data-col="definition" onclick="sortTable('definition')">Definition <span class="sort-arrow">↕</span></th>
+            <th class="col-w-phrase" data-col="phrase" onclick="sortTable('phrase')">Example phrase <span class="sort-arrow">↕</span></th>
+            <th class="col-w-date" data-col="date" onclick="sortTable('date')">Added <span class="sort-arrow">↕</span></th>
+            <th class="col-w-act">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="sheet-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div id="login-overlay" style="display:none;position:fixed;inset:0;background:var(--bg);align-items:center;justify-content:center;z-index:1000;padding:1rem;">
+  <div class="add-form" style="max-width:360px;width:100%;">
+    <h2 style="font-size:16px;font-weight:600;margin-bottom:6px;">Sign in to wordbank</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">We'll email you a sign-in link. Use the same email on every device to see the same list.</p>
+    <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email"
+           style="width:100%;font-family:inherit;font-size:14px;border:1px solid var(--border);border-radius:7px;padding:8px 11px;background:var(--bg);color:var(--text);margin-bottom:10px;">
+    <button class="btn-add" onclick="sendLoginLink()">Email me a sign-in link</button>
+    <div id="login-status" style="font-size:13px;margin-top:8px;color:var(--text-muted);min-height:18px;"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+  const SUPABASE_URL = 'https://oxexzhgpclzjhlohhnkq.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_4Sdv58wYfcEqh5B87VssIg_QJ4NMYme';
+  const LEGACY_KEY = 'wordbank_v1';          // old per-browser storage, moved to Supabase once
+  const MIGRATED_KEY = 'wordbank_migrated_v2';
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentUser = null;
+  let entries = [];
+  let synced = new Map();                    // id -> JSON of the copy last saved to Supabase
+  let activeFilter = 'all';
+  let searchQuery = '';
+  let idCounter = 1;
+
+  function newId() { return 'e' + (idCounter++) + '_' + Math.random().toString(36).slice(2,7); }
+
+  function toRow(e) {
+    return { id: e.id, user_id: currentUser.id, word: e.word, type: e.type,
+             definition: e.definition || '', phrase: e.phrase || '',
+             status: e.status, date: e.date };
+  }
+
+  function fromRow(r) {
+    return { id: r.id, word: r.word, type: r.type, definition: r.definition,
+             phrase: r.phrase, status: r.status, date: r.date };
+  }
+
+  async function start() {
+    const { data } = await db.auth.getSession();
+    if (data.session) await signedIn(data.session.user);
+    else showLogin();
+    db.auth.onAuthStateChange((event, session) => {
+      if (session && !currentUser) signedIn(session.user);
+    });
+  }
+
+  function showLogin() {
+    document.getElementById('login-overlay').style.display = 'flex';
+  }
+
+  async function signedIn(user) {
+    currentUser = user;
+    document.getElementById('login-overlay').style.display = 'none';
+    await load();
+  }
+
+  async function sendLoginLink() {
+    const email = document.getElementById('login-email').value.trim();
+    const status = document.getElementById('login-status');
+    if (!email) { status.textContent = 'Enter your email first.'; return; }
+    const { error } = await db.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.href.split('#')[0] }
+    });
+    status.textContent = error ? 'Error: ' + error.message : 'Check your email for the sign-in link.';
+  }
+
+  async function load() {
+    const { data, error } = await db.from('entries').select('*').order('date', { ascending: false });
+    if (error) { showToast('Could not load your list: ' + error.message); return; }
+    entries = data.map(fromRow);
+
+    // One-time move of words saved in this browser before sync was added
+    try {
+      if (!localStorage.getItem(MIGRATED_KEY)) {
+        const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY) || '[]');
+        const have = new Set(entries.map(e => e.word.toLowerCase().trim()));
+        const moved = legacy
+          .filter(e => e.word && !have.has(e.word.toLowerCase().trim()))
+          .map(e => ({
+            id: newId(), word: e.word, type: e.type || 'vocab',
+            definition: e.definition || '', phrase: e.phrase || '',
+            status: e.status || 'learning', date: e.date || new Date().toISOString()
+          }));
+        if (moved.length) entries = [...moved, ...entries];
+        localStorage.setItem(MIGRATED_KEY, '1');
+      }
+    } catch (e) { /* localStorage unavailable: nothing to migrate */ }
+
+    synced = new Map(entries.map(e => [e.id, JSON.stringify(e)]));
+    await save();
+    render();
+  }
+
+  // Upload only the entries that changed since the last save
+  async function save() {
+    if (!currentUser) return;
+    const changed = entries.filter(e => synced.get(e.id) !== JSON.stringify(e));
+    for (let i = 0; i < changed.length; i += 500) {
+      const chunk = changed.slice(i, i + 500);
+      const { error } = await db.from('entries').upsert(chunk.map(toRow));
+      if (error) { showToast('Save failed: ' + error.message); return; }
+      chunk.forEach(e => synced.set(e.id, JSON.stringify(e)));
+    }
+    updateStats();
+  }
+
+  function addEntry() {
+    const word = document.getElementById('input-word').value.trim();
+    const type = document.getElementById('input-type').value;
+    const definition = document.getElementById('input-definition').value.trim();
+    const phrase = document.getElementById('input-phrase').value.trim();
+
+    if (!word) {
+      document.getElementById('input-word').focus();
+      showToast('Enter a word or expression first.');
+      return;
+    }
+
+    entries.unshift({
+      id: newId(),
+      word, type, definition, phrase,
+      status: 'learning',
+      date: new Date().toISOString()
+    });
+
+    save();
+    render();
+    document.getElementById('input-word').value = '';
+    document.getElementById('input-definition').value = '';
+    document.getElementById('input-phrase').value = '';
+    document.getElementById('lookup-status').textContent = '';
+    document.getElementById('input-word').focus();
+    showToast(`"${word}" added to learning list.`);
+  }
+
+  function promote(id) {
+    const e = entries.find(x => x.id === id);
+    if (e) { e.status = 'remembered'; save(); render(); showToast(`"${e.word}" moved to remembered! 🎉`); }
+  }
+
+  function unlearn(id) {
+    const e = entries.find(x => x.id === id);
+    if (e) { e.status = 'learning'; save(); render(); showToast(`"${e.word}" moved back to learning.`); }
+  }
+
+  function deleteEntry(id) {
+    const idx = entries.findIndex(x => x.id === id);
+    if (idx === -1) return;
+    const word = entries[idx].word;
+    entries.splice(idx, 1);
+    synced.delete(id);
+    db.from('entries').delete().eq('id', id).then(({ error }) => {
+      if (error) showToast('Delete failed: ' + error.message);
+    });
+    save(); render(); showToast(`"${word}" deleted.`);
+  }
+
+  // DICTIONARY LOOKUP via Claude API (works from file://)
+  let lookupTimer = null;
+
+  function setLookupStatus(msg, color) {
+    const el = document.getElementById('lookup-status');
+    el.textContent = msg;
+    el.style.color = color || 'var(--accent)';
+  }
+
+  function triggerLookup() {
+    const word = document.getElementById('input-word').value.trim();
+    if (!word) { setLookupStatus('Enter a word first.', 'var(--text-muted)'); return; }
+    lookupWord(word);
+  }
+
+  async function lookupWord(word) {
+    const btn = document.getElementById('btn-lookup');
+    btn.textContent = '⏳ Looking…';
+    btn.style.opacity = '0.7';
+    btn.disabled = true;
+    setLookupStatus('');
+
+    try {
+      // Free dictionary API (no key). Single words work best; idioms often return "not found".
+      const res = await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(word.toLowerCase()));
+      if (!res.ok) throw new Error('not found');
+      const data = await res.json();
+      const meanings = data[0]?.meanings || [];
+      const defs = meanings.flatMap(m => m.definitions);
+      const definition = defs[0]?.definition || '';
+      const example = defs.find(d => d.example)?.example || '';
+
+      const defField = document.getElementById('input-definition');
+      const phraseField = document.getElementById('input-phrase');
+      let filled = [];
+
+      if (definition) {
+        defField.value = definition;
+        filled.push('definition');
+      }
+      if (example) {
+        phraseField.value = example;
+        filled.push('example phrase');
+      }
+
+      if (filled.length) {
+        setLookupStatus(`✓ Filled in ${filled.join(' & ')} — edit as needed.`, 'var(--accent)');
+      } else {
+        setLookupStatus('No definition found. Fill in manually.', 'var(--text-muted)');
+      }
+
+    } catch (err) {
+      setLookupStatus('Lookup failed. Fill in manually.', '#B91C1C');
+    } finally {
+      btn.textContent = '✦ Look up';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    }
+  }
+
+  // Event delegation on body — catches all card and table button clicks
+  document.body.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+    if (!action || !id) return;
+    if (action === 'delete') deleteEntry(id);
+    else if (action === 'promote') { promote(id); if (document.getElementById('pane-table').classList.contains('active')) renderTable(); }
+    else if (action === 'unlearn') { unlearn(id); if (document.getElementById('pane-table').classList.contains('active')) renderTable(); }
+    else if (action === 'speak-word') speakWord(id, btn);
+    else if (action === 'speak-phrase') speakPhrase(id, btn);
+  });
+
+  function filtered(list) {
+    return list.filter(e => {
+      const matchType = activeFilter === 'all' || e.type === activeFilter;
+      const q = searchQuery.toLowerCase();
+      const matchSearch = !q ||
+        e.word.toLowerCase().includes(q) ||
+        (e.definition || '').toLowerCase().includes(q) ||
+        (e.phrase || '').toLowerCase().includes(q);
+      return matchType && matchSearch;
+    });
+  }
+
+  function cardHTML(e) {
+    const tagClass = e.type === 'vocab' ? 'vocab' : 'expression';
+    const tagLabel = e.type === 'vocab' ? '#vocab' : '#expression';
+    const date = new Date(e.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const doneClass = e.status === 'remembered' ? ' done' : '';
+    const id = e.id;
+
+    const actionBtn = e.status === 'learning'
+      ? `<button class="btn-icon btn-promote" data-action="promote" data-id="${id}">✓ I know this</button>`
+      : `<button class="btn-icon btn-unlearn" data-action="unlearn" data-id="${id}">↩ Still learning</button>`;
+
+    const phraseBlock = e.phrase ? `
+        <div class="card-phrase-row">
+          <div class="card-phrase">"${escHtml(e.phrase)}"</div>
+          <button class="btn-speak" data-action="speak-phrase" data-id="${id}" title="Read example phrase aloud">🔊 phrase</button>
+        </div>` : '';
+
+    return `
+      <div class="card${doneClass}" id="card-${id}">
+        <div class="card-top">
+          <div>
+            <span class="tag ${tagClass}">${tagLabel}</span>
+            <div class="card-word">${escHtml(e.word)}</div>
+          </div>
+          <div class="card-actions">
+            ${actionBtn}
+            <button class="btn-icon btn-delete" data-action="delete" data-id="${id}">✕</button>
+          </div>
+        </div>
+        <div class="card-voice-row">
+          <button class="btn-speak" data-action="speak-word" data-id="${id}" title="Read word and definition aloud">🔊 word</button>
+        </div>
+        ${e.definition ? `<div class="card-definition">${escHtml(e.definition)}</div>` : ''}
+        ${phraseBlock}
+        <div class="card-date">Added ${date}</div>
+      </div>`;
+  }
+
+  function render() {
+    const learning = filtered(entries.filter(e => e.status === 'learning'));
+    const remembered = filtered(entries.filter(e => e.status === 'remembered'));
+
+    const ll = document.getElementById('learning-list');
+    const rl = document.getElementById('remembered-list');
+
+    ll.innerHTML = learning.length
+      ? learning.map(cardHTML).join('')
+      : `<div class="empty"><span>📝</span>Nothing here yet — add something above.</div>`;
+
+    rl.innerHTML = remembered.length
+      ? remembered.map(cardHTML).join('')
+      : `<div class="empty"><span>🎯</span>Words you've mastered will show up here.</div>`;
+
+    document.getElementById('count-learning').textContent = learning.length;
+    document.getElementById('count-remembered').textContent = remembered.length;
+    updateStats();
+  }
+
+  function updateStats() {
+    const l = entries.filter(e => e.status === 'learning').length;
+    const r = entries.filter(e => e.status === 'remembered').length;
+    document.getElementById('stat-learning').textContent = l;
+    document.getElementById('stat-remembered').textContent = r;
+    document.getElementById('stat-total').textContent = entries.length;
+  }
+
+  function escHtml(s) {
+    return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  // VOICE
+  let voices = [];
+  let speaking = null;
+
+  function loadVoices() {
+    voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
+    const sel = document.getElementById('voice-select');
+    sel.innerHTML = '';
+    if (voices.length === 0) {
+      sel.innerHTML = '<option>No English voices found</option>';
+      return;
+    }
+    voices.forEach((v, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${v.name} (${v.lang})`;
+      if (v.default) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    // prefer a natural-sounding voice
+    const preferred = ['Samantha','Karen','Daniel','Google US English','Google UK English Female'];
+    voices.forEach((v, i) => {
+      if (preferred.some(p => v.name.includes(p))) sel.value = i;
+    });
+  }
+
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+  loadVoices();
+
+  function getVoiceSettings() {
+    const sel = document.getElementById('voice-select');
+    const rate = parseFloat(document.getElementById('voice-rate').value);
+    const pitch = parseFloat(document.getElementById('voice-pitch').value);
+    const voice = voices[parseInt(sel.value)] || null;
+    return { voice, rate, pitch };
+  }
+
+  function speak(text, btn) {
+    window.speechSynthesis.cancel();
+    if (speaking === btn) { speaking = null; btn.classList.remove('speaking'); return; }
+    if (speaking) { speaking.classList.remove('speaking'); speaking.textContent = speaking.dataset.label; }
+
+    const utter = new SpeechSynthesisUtterance(text);
+    const { voice, rate, pitch } = getVoiceSettings();
+    if (voice) utter.voice = voice;
+    utter.rate = rate;
+    utter.pitch = pitch;
+
+    speaking = btn;
+    btn.classList.add('speaking');
+
+    utter.onend = () => { btn.classList.remove('speaking'); if (speaking === btn) speaking = null; };
+    utter.onerror = () => { btn.classList.remove('speaking'); if (speaking === btn) speaking = null; };
+
+    window.speechSynthesis.speak(utter);
+  }
+
+  function speakWord(id, btn) {
+    const e = entries.find(x => x.id === String(id));
+    if (!e) return;
+    const text = e.definition ? `${e.word}. ${e.definition}` : e.word;
+    speak(text, btn);
+  }
+
+  function speakPhrase(id, btn) {
+    const e = entries.find(x => x.id === String(id));
+    if (!e || !e.phrase) return;
+    speak(e.phrase, btn);
+  }
+
+  function toggleVoicePanel() {
+    document.getElementById('read-panel').classList.remove('open');
+    document.getElementById('voice-panel').classList.toggle('open');
+  }
+
+  document.addEventListener('click', function(ev) {
+    const vp = document.getElementById('voice-panel');
+    const vb = document.getElementById('voice-btn');
+    if (!vp.contains(ev.target) && !vb.contains(ev.target)) {
+      vp.classList.remove('open');
+    }
+    const rp = document.getElementById('read-panel');
+    const rb = document.getElementById('read-btn');
+    if (!rp.contains(ev.target) && !rb.contains(ev.target)) {
+      rp.classList.remove('open');
+    }
+  });
+
+  document.getElementById('voice-rate').addEventListener('input', function() {
+    document.getElementById('rate-val').textContent = parseFloat(this.value).toFixed(2) + '×';
+  });
+
+  document.getElementById('voice-pitch').addEventListener('input', function() {
+    document.getElementById('pitch-val').textContent = parseFloat(this.value).toFixed(1);
+  });
+
+  // TABS
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('pane-' + name).classList.add('active');
+    btn.classList.add('active');
+    if (name === 'table') renderTable();
+  }
+
+  // TABLE
+  let tblSort = { col: 'word', dir: 1 };
+  let tblSearch = '';
+  let tblFilterType = 'all';
+  let tblFilterStatus = 'all';
+
+  function filteredForTable() {
+    return entries.filter(e => {
+      const matchType = tblFilterType === 'all' || e.type === tblFilterType;
+      const matchStatus = tblFilterStatus === 'all' || e.status === tblFilterStatus;
+      const q = tblSearch.toLowerCase();
+      const matchSearch = !q ||
+        e.word.toLowerCase().includes(q) ||
+        (e.definition || '').toLowerCase().includes(q) ||
+        (e.phrase || '').toLowerCase().includes(q);
+      return matchType && matchStatus && matchSearch;
+    }).sort((a, b) => {
+      const av = (a[tblSort.col] || '').toString().toLowerCase();
+      const bv = (b[tblSort.col] || '').toString().toLowerCase();
+      return av < bv ? -tblSort.dir : av > bv ? tblSort.dir : 0;
+    });
+  }
+
+  function renderTable() {
+    const rows = filteredForTable();
+    const tbody = document.getElementById('sheet-body');
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="table-empty">No entries match your filters.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = rows.map(e => {
+      const tagClass = e.type === 'vocab' ? 'vocab' : 'expression';
+      const tagLabel = e.type === 'vocab' ? '#vocab' : '#expression';
+      const date = new Date(e.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const statusBtn = e.status === 'learning'
+        ? `<button class="tbl-act-btn" data-action="promote" data-id="${e.id}">✓ know</button>`
+        : `<button class="tbl-act-btn" data-action="unlearn" data-id="${e.id}">↩ retry</button>`;
+      return `<tr>
+        <td class="col-word">${escHtml(e.word)}</td>
+        <td><span class="tag ${tagClass}" style="margin-bottom:0">${tagLabel}</span></td>
+        <td><span class="status-pill ${e.status}">${e.status}</span></td>
+        <td class="col-def">${escHtml(e.definition || '—')}</td>
+        <td class="col-phrase">${e.phrase ? '"' + escHtml(e.phrase) + '"' : '—'}</td>
+        <td class="col-date">${date}</td>
+        <td>${statusBtn}<button class="tbl-act-btn tbl-del" data-action="delete" data-id="${e.id}">✕</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function sortTable(col) {
+    if (tblSort.col === col) { tblSort.dir *= -1; }
+    else { tblSort.col = col; tblSort.dir = 1; }
+    document.querySelectorAll('.sheet th').forEach(th => {
+      th.classList.remove('sorted');
+      const arrow = th.querySelector('.sort-arrow');
+      if (arrow) arrow.textContent = '↕';
+    });
+    const th = document.querySelector(`.sheet th[data-col="${col}"]`);
+    if (th) {
+      th.classList.add('sorted');
+      const arrow = th.querySelector('.sort-arrow');
+      if (arrow) arrow.textContent = tblSort.dir === 1 ? '↑' : '↓';
+    }
+    renderTable();
+  }
+
+  function exportCSV() {
+    const rows = filteredForTable();
+    const header = ['Word', 'Tag', 'Status', 'Definition', 'Example Phrase', 'Date Added'];
+    const csvRows = [header, ...rows.map(e => [
+      e.word, e.type, e.status, e.definition || '', e.phrase || '',
+      new Date(e.date).toLocaleDateString('en-US')
+    ])].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'wordbank.csv';
+    a.click();
+    showToast('CSV exported!');
+  }
+
+  document.getElementById('tbl-search').addEventListener('input', function() {
+    tblSearch = this.value.trim(); renderTable();
+  });
+  document.getElementById('tbl-filter-type').addEventListener('change', function() {
+    tblFilterType = this.value; renderTable();
+  });
+  document.getElementById('tbl-filter-status').addEventListener('change', function() {
+    tblFilterStatus = this.value; renderTable();
+  });
+
+  // Search
+  document.getElementById('search-input').addEventListener('input', function() {
+    searchQuery = this.value.trim();
+    render();
+  });
+
+  // Filters
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      activeFilter = this.dataset.filter;
+      render();
+    });
+  });
+
+  // Enter to submit
+  document.getElementById('input-phrase').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addEntry();
+  });
+  document.getElementById('input-word').addEventListener('keydown', e => {
+    if (e.key === 'Enter') triggerLookup();
+  });
+
+  start();
+
+  // ---- Friends Idioms Import ----
+  const FRIENDS_IDIOMS = [{"word": "Get it together", "definition": "to organize one's thinking; to become relaxed and rational", "phrase": "Ross: “Even if I could get it together to ask a woman out, who am I gonna ask?"}, {"word": "Make a difference", "definition": "to have an effect, be important, matter", "phrase": "Chandler: “All right, kids. I gotta get to work. If I don’t input those numbers, it doesn’t make much of a difference.”"}, {"word": "Stomp on one’s heart", "definition": "to break someone's heart", "phrase": "Rachel: “Hi, Barry, remember me? I’m the girl in a veil that stomped on your heart in front of your entire family.”"}, {"word": "Have a thing for somebody", "definition": "have a strong liking for smb", "phrase": ""}, {"word": "Take the heat off somebody", "definition": "to relieve someone from scrutiny or criticism", "phrase": "Monica to Ross: “Were you planning to bring up the whole baby- lesbian thing? Because it might take some of the heat off me.”"}, {"word": "Steer clear off somebody or something", "definition": "to avoid somebody or something", "phrase": "Ross to Rachel: “You may want to steer clear of the word ‘dumped’.” Rachel sees Barry and finds out he’s seeing Mindy, her made of honor. Ross goes with Carol to the first ultrasound. Monica is nervous about her parents’ coming."}, {"word": "Take the first shot", "definition": "to speak first", "phrase": "Monica: “Who’s gonna take the first shot?” Monica dates a guy whom everybody loves. Chandler smokes again. Phoebe keeps getting money gifts."}, {"word": "The glass is half empty", "definition": "to believe that a situation is more bad than good", "phrase": "Chandler: “Well, aren’t we Mr. The Glass is Half Empty?”"}, {"word": "Gang up on somebody", "definition": "to unite as a group against somebody", "phrase": "Phoebe: “If you want I’ll do it with you.” Chandler: “Thanks, but I think she’ll feel like we’re ganging up on her.”"}, {"word": "Put heads together", "definition": "to share ideas in trying to solve a problem", "phrase": "Joe to Monica: “If we put our heads together, we can break them up.” Phoebe and Chandler break up with their boyfriend and girlfriend. Phoebe helps Chandler break up with Janice. Monica and Joe break up a couple. Ross and Rachel do the laundry together."}, {"word": "Crack one’s way", "definition": "make the way through obstacles", "phrase": "Chandler to Joe: “After all your years of struggling you’ve finally been able to crack your way into show business.”"}, {"word": "Throw a party", "definition": "to organize a party", "phrase": "Joe to Ross: “You have to throw a party for Monica.”"}, {"word": "Take one’s time", "definition": "to not hurry", "phrase": "Ross: “I’m taking my time, I’m laying the groundwork.” (about Rachel)"}, {"word": "Have a crush on somebody", "definition": "to have a romantic infatuation with someone", "phrase": "Phoebe: “I was the last to know you had a crush on Joe when he was moving in.”"}, {"word": "Out of one’s league", "definition": "not right for you, something you are not prepared for", "phrase": ""}, {"word": "Drive somebody crazy", "definition": "to annoy or irritate someone", "phrase": "Monica to Mom: “Would you tell her how she drove you crazy picking on every little detail?” Chandler’s colleague thinks he’s gay. Nana dies and everybody goes to the funeral. Ross tries to tell Rachel he loves her again. Monica talks to her mother."}, {"word": "Be behind something", "definition": "to support it", "phrase": "Chandler: “I'd just like to say I’m totally behind this experiment.”"}, {"word": "Shut somebody out", "definition": "to prevent someone from being a part of something", "phrase": "Ross: “It’s Marcel. He keeps shutting me out.”"}, {"word": "Break someone’s heart", "definition": "to cause severe emotional pain or grief", "phrase": "Monica to Phoebe: “Don’t look now but behind you there’s a guy who has the potential to break our hearts and plunge us into depression.”"}, {"word": "Come out of one’s shell", "definition": "to be or become less shy and more outgoing, or enthusiastic", "phrase": "Chandler to his mom sarcastically: “Well, I think you need to come out of your shell…”"}, {"word": "Big deal", "definition": "Who cares?", "phrase": "Chandler to Ross: “It’s just a weekend, who cares?” – about Rachel and Paolo."}, {"word": "Make a pass at", "definition": "to flirt with or suggest sexual activity with someone", "phrase": "Phoebe: “Paolo made a pass at me.” Paolo made a pass at Phoebe. Chandler and Joe bought a fussball table. Ross doesn’t want to know the sex of the baby and later finds out it’s a boy ."}, {"word": "Not know somebody from Adam", "definition": "to have never met someone and not know anything about them", "phrase": ""}, {"word": "Come clean with somebody", "definition": "to tell the truth", "phrase": "Joe to his Dad: “Either you break it up with Ronnie…” Dad: “I can’t do that!” Joe: “Then come clean with Ma.”"}, {"word": "Go the distance", "definition": "carry through a course of action to completion", "phrase": "Joe: “When the right woman comes along, I’ll be able to be a stand up guy and go the distance.” Phoebe dates a shrink and everybody hates him. Chandler saw Rachel boobies. Joe’s father has a mistress."}, {"word": "Get back in the game", "definition": "to become active again", "phrase": "Chandler: “Come on, Ross. You gotta get back in the game here.” – convincing him to try to talk to a woman."}, {"word": "Seal the deal", "definition": "to solidify, finalize, or decide upon an agreement", "phrase": "Joe to Ross: “She’s going to take one look at his furry, cute little face and it’ll seal the deal.”"}, {"word": "Dip your pen into company’s ink", "definition": "to mess around with someone you work with", "phrase": "Ross to Chandler: “You don’t dip your pen into company’s ink.”"}, {"word": "Flip somebody for it", "definition": "to flip a coin", "phrase": "Ross: “I’ll flip you for it.” – to Susan at a Lamaze class."}, {"word": "Beg to differ", "definition": "to politely disagree with someone else", "phrase": "Rachel: “I beg to differ, the Pictionary incident.”"}, {"word": "Be full of it", "definition": "to be completely wrong", "phrase": "Rachel: “What, were you just full of it?” - to Ross during the poker game."}, {"word": "Pick somebody out of a lineup", "definition": "to recognize somebody (like during police investigation)", "phrase": "Rachel: “During that second time you couldn’t have picked her out of a lineup.”"}, {"word": "Make your toes curl", "definition": "to make you feel extremely embarrassed and ashamed for someone else, to frighten, shock or fascinate", "phrase": "Rachel: \"You can never have both – someone who’s your best friend but can also make your toes curl.\" Rachel lost Ross’s monkey. Phoebe got shot with a tranquilizer. Ross got mad at Rachel. Ross couldn’t tell Rachel about his feelings."}, {"word": "Take the brunt of", "definition": "to receive the worst part of something unpleasant or harmful", "phrase": "Phoebe: “I'd say that chair’s taking the brunt.” – about Marcel."}, {"word": "Know one’s way around the table", "definition": "to be very familiar with (something) or be good at using or operating (something)", "phrase": "Rachel: “Well, last night you seemed to know your way around the table.” – about her dream."}, {"word": "Boss", "definition": "employee relationships", "phrase": ""}, {"word": "Cook something up", "definition": "invent something, come up with something", "phrase": "Carol: “How come we’ve never mentioned ‘Ben’ before?” Ross: “We’ve just cooked it up.” – a name for the baby. Ross is having a baby. Rachel is after a cute doctor. Joe helps a girl have a baby."}, {"word": "Go for it", "definition": "to do what you need to without additional thought", "phrase": "Monica: “I’m telling you, she went to the airport, she’s gonna go for it with Ross.”"}, {"word": "Hit rock bottom", "definition": "to reach the lowest possible level or be in the worst possible situation", "phrase": "Rachel: “Joe, when I saw him getting off that plane with her, I just hit rock bottom.” Ross comes home from China with a girlfriend. Joe’s tailor took advantage of Chandler. Rachel realizes how much she wants to be with Ross. Phoebe cut Monica’s hair but not the way she wants ."}, {"word": "Trains are on the same track", "definition": "life stories are the same", "phrase": "Chandler: “Our trains are on the same track. I’m coming up 30 years behind him but the stops are all the same.” (about Mr. Heckles)"}, {"word": "Get hung up on something", "definition": "keep thinking about something and let it be a big deal", "phrase": "Chandler: “Don’t get hung up on it. Quick! List five things you like about her.” Mr. Heckles dies and friends are taking care of his apartment. Monica doesn’t want Rachel to have a tacky lamp. Phoebe doesn’t believe in evolution and Ross can’t stand it. Chandler is afraid he’ll die alone."}, {"word": "Open", "definition": "mindedness", "phrase": ""}, {"word": "Put feelings behind", "definition": "to decide to forget or ignore something unpleasant", "phrase": "Phoebe: “I’m going to see him so I could put all those feelings behind us.”"}, {"word": "Get oneself psyched out", "definition": "to become very excited", "phrase": "Ross: “So, now I’ve got myself all psyched out.”"}, {"word": "In a nutshell", "definition": "briefly", "phrase": "Rachel: “Oh, Julie, let’s start with your childhood. What was it like?” Julie: “In a nutshell.” Phoebe’s husband came to see her. Rachel keeps Ross from sleeping with Julie. Everybody watched Joe’s tape at Ross’s."}, {"word": "Be out of line", "definition": "to act in an inappropriate or unacceptable way", "phrase": ""}, {"word": "Out the window", "definition": "discarded, tossed out", "phrase": "Chandler: “I was looking forward to playing baseball but I guess that’s out the window.”"}, {"word": "Be on board", "definition": "to agree to work with someone", "phrase": "Monica to Chandler: “I’m the energy train and you are on board (about running).”"}, {"word": "Get something straight", "definition": "to understand, sort out", "phrase": "Joe: “Let me get this straight.”"}, {"word": "This ship has sailed", "definition": "an opportunity has passed", "phrase": "Ross: “I’m with somebody else. I’m happy. This ship has sailed!” Ross and Julie are getting a cat. Rachel goes on a date and calls Ross from there. Ross finds out about Rachel’s feelings. Monica is trying to get Chandler to work out."}, {"word": "Sink into something", "definition": "to pass into some condition", "phrase": "Rachel: “At first it was really intense, you know. And then we just sort of sunk into it.” Ross makes a list of pros and cons to decide between Rachel and Julie Monica invents recipes with ‘mocholate’ Chandler gets a computer Rachel is mad at Ross Making a choice Decision making Creativity Creative cooking"}, {"word": "Pants on fire", "definition": "somebody is lying", "phrase": "Phoebe: “I smell smoke. Maybe, because someone’s pants are on fire.”"}, {"word": "Last but not least", "definition": "last in sequence but not last in importance", "phrase": "Joe: “And last but not least – Monica. They rip for your pleasure.” Phoebe goes to see her dad but chickens out to actually get to the house. Girls don’t tip anybody, just give cookies."}, {"word": "Pick somebody up", "definition": "make somebody feel better, cheer up", "phrase": "Fun Bobbie to Joe: “Hey, do you need me to pick you up?”"}, {"word": "Keep something or someone at bay", "definition": "to keep something or something away, prevent from moving closer", "phrase": "Ross: “So far I’ve been keeping her at bay, but if this is the deal… (about his colleague).\""}, {"word": "Eat or be eaten", "definition": "win or be beaten, attack or be attacked", "phrase": ""}, {"word": "Make eyes at someone", "definition": "to flirt with someone", "phrase": ""}, {"word": "Get off the track", "definition": "to become unfocused; to stray from the central topic", "phrase": ""}, {"word": "Blow somebody off", "definition": "to cancel the plans with someone", "phrase": "Joe to Ross: “You’re blowing me off for a monkey?”"}, {"word": "Sell someone out", "definition": "to betray someone", "phrase": "Monica to Rachel: “You sold me out.” Ross goes to the movie set to visit Marcel. Chandler meets his old classmate who takes back at him for humiliating her in childhood. Rachel and Monica fight over Van Damm. Joe tries to get a job in the same movie. Phoebe is asked to play for the kids at the library."}, {"word": "Good to go", "definition": "all ready for the situation", "phrase": "Joe to Chandler: “When you put this on, you’re good to go.”"}, {"word": "Cross the line", "definition": "to do something wrong", "phrase": ""}, {"word": "Make it up to someone", "definition": "to compensate for something", "phrase": "Rachel to Ross: “I’m sorry about last night. I really want to make it up to you.” Rachel laughs when Ross kisses her. Joe and Chandler watch their new TV all day in their armchairs. Phoebe waitresses when Monica caters for her parents’ friend. Monica goes out with Dr. Burke."}, {"word": "The can of worms", "definition": "an array of difficulties", "phrase": "Chandler: “Oh, God! Can opened, worms everywhere.” (about Joe using his toothbrush and licking spoons)"}, {"word": "High and dry", "definition": "abandoned, unsupported, stranded", "phrase": "Joe to Chandler: “Hey, are you cool with this? I don’t want to leave you high and dry.”"}, {"word": "Rubber and glue", "definition": "meaning “your insult doesn’t stick to me and is ignored”", "phrase": "Rachel: “Oh, you know, he is rubber and you’re glue?”"}, {"word": "Have a ball", "definition": "to have an exciting time", "phrase": "Chandler: “I hear the place looks great.” Joe: “Forget about it, I’m having a ball.”"}, {"word": "Have the last word", "definition": "to make the final decision about something", "phrase": "Joe: “It’s just like Brad to have to have the last word (scene in a show).” Ross and Monica fight because Ross spends too much time in their apartment. Joe and Chandler miss each other."}, {"word": "Pull something off", "definition": "manage to make something happen", "phrase": "Monica: “I can’t pull it off, can I?” (after saying, you go, girl)"}, {"word": "Flip for something", "definition": "to flip a coin with someone to determine who gets to have something or do something", "phrase": "Monica: “Joe, why didn’t you grow a mustache.” Joe: “Oh, we flipped for it. I got the cigar, he got the mustache.”"}, {"word": "Baked in", "definition": "for sure included, you can’t take it out", "phrase": "Monica: “So you can’t lose. It’s there in the title. Wonderful is baked right in.” (about the movie)"}, {"word": "See it coming", "definition": "to know something bad is about to happen", "phrase": "Richard: “The guy was Lou Gehrig. Didn’t you kind of see it coming?” Joe and Chandler start hanging out with Richard and think he’s cool. Phoebe hasn’t seen a lot of sad movies’ endings."}, {"word": "Be on the same page", "definition": "have the same understanding or amount of knowledge", "phrase": "Chandler: “I just want to make sure we’re on the same page.” (to guys who stole his hat)"}, {"word": "Be good to go", "definition": "to be ready to go, ready for the situation", "phrase": "Joe: “Hey, Phoebe, I think you’re good to go.” (when she’s afraid to go see her father)"}, {"word": "Once in a blue moon", "definition": "very rarely", "phrase": "Phoebe: “And he said that only once in a blue moon does a dog’s ear grow back.”"}, {"word": "Come to terms with something", "definition": "to begin to accept and deal with something difficult or unpleasant", "phrase": "Monica: “Hey, I’ve come to terms with it, you have to, too.”"}, {"word": "Stay clear off", "definition": "to keep one's distance from something, usually something dangerous", "phrase": "Rachel to Ross: “Let’s just stay clear off ‘I’m the guy doing your daughter’ and you’re gonna be ok.” Rachel’s mom and dad can’t be in one room together. Monica’s party is too boring. Rachel’s mom thinks she chose a guy too much like her father."}, {"word": "Feel left out", "definition": "to feel that one is not included in something", "phrase": "Phoebe: “I’ve never had it, I feel so left out.” (about chicken pox)"}, {"word": "Cut some slack", "definition": "to allow someone to do something that is not usually allowed, or to treat someone less severely than is usual", "phrase": "Chandler: “It’s about cutting my people some slack.”"}, {"word": "Make something count", "definition": "to make something have as useful and positive an effect as possible", "phrase": "Ross: “I’m shipping out tomorrow.” Rachel: “Then we better make this night count.” Phoebe got chicken pox and infected her sailor boyfriend. Monica shared her quirks with Richard who doesn’t have a thing. Joe goes to work for Chandler and creates a fictional character."}, {"word": "Self", "definition": "centeredness", "phrase": ""}, {"word": "Call somebody on something", "definition": "to tell someone that one has noticed that he or she has done something wrong", "phrase": "Chandler: “She totally called me on it. She said, cut it out, get real. And I did.”"}, {"word": "Up and about", "definition": "sane and in good health", "phrase": ""}, {"word": "Have the guts", "definition": "to have courage", "phrase": "A guest at a wedding: “Rachel, there are not many people who have the guts to come back.”"}, {"word": "Watched pot never boils", "definition": "something you are waiting for will not happen while you are concentrating on it", "phrase": "Phoebe: “Chandler, you’ve got to stop staring at the door. It’s like a watched pot. If you keep looking at it, then the door is never gonna boil.” Richard doesn’t want to have children and Monica breaks up with him at the end. Rachel had the guts to go to Barry’s wedding and even sang there. Rachel’s underwear was showing and everybody was teasing her. Chandler chats with seemingly perfect woman who then turns out to be Janice. Joe needs to practice kissing a man for a movie part ."}, {"word": "Be out on a limb", "definition": "to be in a difficult, awkward, or vulnerable position", "phrase": "Chandler: “I may be way out on a limb here, but do you have a problem with Janice?”"}, {"word": "Drive someone nuts", "definition": "to greatly exasperate someone, annoy to distraction", "phrase": "Joe: “She used to drive you buts before too, remember?”"}, {"word": "Give it a shot", "definition": "to attempt to do something", "phrase": "Chandler to Joe: “I appreciate you giving it a shot.” (about liking Janice)"}, {"word": "Go over to the bad place", "definition": "to become crazy, disoriented, or frustrated", "phrase": "Chandler: “Monica, I think you’ve gone over to the bad place.”"}, {"word": "Be hard on oneself", "definition": "to treat oneself strictly or with severe reproach", "phrase": "Phoebe: “You seem like a really nice guy. Don’t be so hard on yourself, ok?”"}, {"word": "Get a crush on somebody", "definition": "to become romantically infatuated with someone, especially unbeknownst to that person", "phrase": ""}, {"word": "Run for one’s life", "definition": "to hurry away from something", "phrase": "Chandler: “This alarm started going off in my head, ‘Run for your life, run for your life! Get out of the building!”"}, {"word": "Get a shot at", "definition": "to acquire a real chance of succeeding in something", "phrase": "Joe to Phoebe: “Did you hear anything? I think I got a shot at it.” - about a TV commercial. Chandler is afraid to make a commitment and tries to face his fear with Janice . Ross is trying to make Ben drop the Barbie and get a GI Joe toy. Phoebe pretends to be Joe’s agent and gives him all rejections to work on."}, {"word": "Play the odds", "definition": "consider the chance that one thing will happen instead of a different thing", "phrase": "Chandler: “She’s never gonna be around. So, you got to play the odds.” - about Isabella."}, {"word": "On the house", "definition": "for free", "phrase": "Phoebe to Frank: “You can get one yourself (massage). It’ll be on the house, you know.” 10 bucks says – I can bet that ..."}, {"word": "Sister", "definition": "brother relationships", "phrase": ""}, {"word": "Leave something alone", "definition": "stop talking about a subject", "phrase": "Rachel to Ross: “You had to do it, didn’t you? You couldn’t just leave it alone.”"}, {"word": "Make nice", "definition": "to resolve a quarrel, to make up", "phrase": "Rachel: “I’ll invite him to brunch tomorrow and you can make nice.”"}, {"word": "Rat somebody out", "definition": "to give somebody away", "phrase": "Monica: “Did he just say, ‘Monica Bang?’ Oh, my God, he’s gonna rat me out.”"}, {"word": "Baby", "definition": "sitting", "phrase": ""}, {"word": "Decision", "definition": "making", "phrase": ""}, {"word": "Take one’s mind off something", "definition": "to cause you to stop thinking about who or what is causing worry", "phrase": "Joe to Chandler: “If you play, you’ll get some fresh air, maybe you’ll take your mind off Janice.”"}, {"word": "Cut to the chase", "definition": "to focus on what is important", "phrase": "Ross: “You know what, I’ve had enough of this. Let’s just cut to the chase here. Heidy, which of my boys do you like?” It’s Thanksgiving and everybody decided to play football. Ross and Monica ‘s Geller cup. Rachel can’t play football. Chandler and Joe compete over a Dutch girl."}, {"word": "In one’s prime", "definition": "the best years of one’s life", "phrase": "Phoebe: “I’m against innocent trees being cut down in their prime.”"}, {"word": "Be my guest", "definition": "a set phrase encouraging or allowing someone else to take action", "phrase": ""}, {"word": "Naked eye", "definition": "the human eye, unassisted by optics, such as a telescope, microscope, or spectacles", "phrase": "Joe: “I looked at it so fast, it was invisible to the naked eye.”"}, {"word": "Jump the gun", "definition": "to do something too soon, especially without thinking carefully about it", "phrase": "Chandler: “Look, I may have jumped the gun here.” Rachel meets Mark and he helps her get a job a Bloomingdales. Chandler fools around with Joe’s sister and can’t remember which one. The noisy neighbor upstairs is too charming."}, {"word": "Piece of cake", "definition": "a very easy task or accomplishment", "phrase": "Music director to Joe: “Believe me, with your dance background, it’ll be a piece of cake.” Monica dates a poet who thinks she’s an empty vase. Ross is overly jealous of Mark. Joe has to audition for a musical but can’t dance."}, {"word": "Top something off", "definition": "to add to the difficulty of something", "phrase": "Monica: “I had to work 2 shifts, then to top it off I lost one of my fake boobs in a grill fire.”"}, {"word": "A watched pot never boils (…never beeps)", "definition": "when you want something to happen, paying attention to it will make the wait feel much longer", "phrase": ""}, {"word": "Wrong decisions", "definition": "Intercultural relationships", "phrase": ""}, {"word": "Get in the way", "definition": "prevent something from happening", "phrase": "Phoebe: “You know, when you’re on a date and you’re getting along great, but the guys translator keeps getting in the way.”"}, {"word": "Be on board about something", "definition": "agree about something", "phrase": "Joe: “Ross, I’m on board about the whole honesty thing.”"}, {"word": "Be out of one’s mind", "definition": "to be or act insane, crazy", "phrase": "Ross: “Look, Rachel, I’m sorry, I was out of my mind.” Ross slept with the Xerox girl and Rachel finds out. Ross and Rachel fight and then break up completely while everybody else is in Monica’s room."}, {"word": "Hit the road", "definition": "to depart", "phrase": "Monica: “Ok, let’s go. Let’s hit the road.”"}, {"word": "Step on some toes", "definition": "to upset someone, esp. by getting involved in something that is their responsibility", "phrase": "Ross: “Unless of course I’m stepping on some toes in which case I could just mosey on.”"}, {"word": "Best thing since sliced bread", "definition": "an excellent new invention", "phrase": "Joe: “Just because she went to Yale Drama she thinks she’s like the greatest actress since sliced bread.”"}, {"word": "Make a big deal out of something", "definition": "to exaggerate or build up the importance of something", "phrase": "Kate to Joe: “So, let’s not make a big deal out of it, ok?”"}, {"word": "Have a crush on someone", "definition": "to be in love, infatuated by someone", "phrase": "Monica: “Pete’s just doing this because he has a crush on me.”"}, {"word": "It gets old", "definition": "becomes annoying due to repetition", "phrase": "Rachel: “Would you stop it, it’s getting really old.” Phoebe is on hold on Monica’s phone. Rachel dates a screamer, and Ross tries to show it to others. Joe finally is with Kate but she is moving to LA."}, {"word": "On a short notice", "definition": "without much warning or time to prepare", "phrase": "Doctor: “Thank you so much for coming on such a short notice.”"}, {"word": "Have someone on board", "definition": "to be ready to participate or be included", "phrase": ""}, {"word": "Worse come to worst", "definition": "if the worst thing that can happen does happen", "phrase": "Chandler to Monica: “Hey, besides, worse come to worse, I will be your boyfriend.”"}, {"word": "Get cracking on something", "definition": "to start working on something", "phrase": "Ross: “So, I’d better get cracking on this baby.”"}, {"word": "Do something for a living", "definition": "to do work to earn enough money to live", "phrase": "Chandler: “I can’t believe you don’t know what I do for a living.”"}, {"word": "Let it go", "definition": "forget it, stop worrying about it", "phrase": "Joe: “Dude, Phoebe’s mom’s got a huge pair of …” Chandler: “Let it go!”"}, {"word": "Lose touch with someone or something", "definition": "to let one’s relationship with someone or a group lapse", "phrase": "Chip: “After high school, you kind of lose touch.”"}, {"word": "Stick up for someone", "definition": "to support someone or something; to speak in favor of someone or something", "phrase": "Monica: “You don’t have to stick up for her, she can’t hear you.”"}, {"word": "Get something over with", "definition": "to finally accomplish something usually unpleasant", "phrase": "Joe: “All right, I’m here. Let’s get this over with.”"}, {"word": "Hit it off", "definition": "to form an immediate, positive connection with someone", "phrase": "Phoebe: “So, Rich and I hit it off, and we started making out, but then my boss came in.”"}, {"word": "Get shot down", "definition": "get refused by a girl/guy when you attempt to get a date", "phrase": "Chandler: “All right, I’m gonna do it. I’m gonna go get shot down.”"}, {"word": "On short notice", "definition": "Without much warning or time to prepare", "phrase": "Monica: “I don’t have money or equipment to handle something that big on such short notice.”"}, {"word": "The bottom line", "definition": "the main point or crucial factor", "phrase": "Chandler: “The bottom line is I want her to have it.” Ross dates a messy girl who’s apartment is full of garbage Rachel is trying to do a crossword puzzle by herself Monica and Phoebe did catering together, Phoebe handled the money Chandler gets a great gift for Joe’s girlfriend"}, {"word": "Pieces fall into place", "definition": "events happen to produce the situation you want and start to make sense", "phrase": "Chandler: “And all the pieces of my life are falling right into place.”"}, {"word": "Have one’s work cut out for someone", "definition": "to have a large and difficult task prepared for one", "phrase": "Joe: “Just so you know, you might have your work cut out for you.” Chandler kisses Kathy, she breaks up with Joe because she likes Chandler too. Ross plays his horrible music on the keyboard. Phoebe is impressed by Ross’s music."}, {"word": "Best shot", "definition": "be the best or only option", "phrase": "Phoebe: “Yeh, I could see where I’d be your best shot, but no.” Monica and Rachel are taking care of Ben and banged his head. Janice can’t decide whether to be with Chandler or go back to her husband. Phoebe thinks she kills people by going to the dentist."}, {"word": "Lay into someone or something", "definition": "to attack, scold someone or something", "phrase": "Phoebe: “You really laid into this place (about the restaurant).”"}, {"word": "Go out of one’s way", "definition": "to take extra trouble to do something beyond what it required", "phrase": "Chandler: “I no longer feel the need to go out of my way to stop others from being happy.”"}, {"word": "Get a jump on things", "definition": "to start something ahead of others, in order to gain an advantage", "phrase": ""}, {"word": "Fill someone’s shoes", "definition": "To take over a role from someone else", "phrase": "Ross: “And you’re afraid you won’t be able to fill his shoes?” Joe works as a tour guide in a museum is there’s a division between white coats and blue blazers. Phoebe decides to carry her brother’s baby. Monica helps Chandler to satisfy his girlfriend."}, {"word": "A second opinion", "definition": "an independent professional review and assessment of a patient done to confirm, add to, or revise the diagnoses and proposed treatments", "phrase": "Chandler: “The vet thinks she’s becoming a rooster. We’re getting a second opinion.”"}, {"word": "Cough something up", "definition": "to produce something (which someone has requested), usually money", "phrase": "Chandler: “All right. 10 bucks. Fork it over. Cough it up. Pay the piper. Give me.”"}, {"word": "Put all eggs in one basket", "definition": "to make everything dependent on only one thing; to place all one's resources in one place, account", "phrase": "Phoebe: “This is Frank and Alice’s only shot. I’m literally putting all their eggs in one basket.”"}, {"word": "Gravy train", "definition": "a job or source that brings in a steady supply of easy money", "phrase": "Monica: “We switched apartments. You can’t eat our food. That gravy train has ended.”"}, {"word": "Loose cannon", "definition": "a person whose actions are unpredictable and uncontrollable", "phrase": "Joe: “I’m one of the cops who won’t work with you because you’re a loose cannon.”"}, {"word": "Lost cause", "definition": "something that has no or a very low chance of succeeding or turning out well", "phrase": "Chandler: “Forget it. We tried but phrase 3 is a lost cause.”"}, {"word": "Drive someone crazy", "definition": "greatly exasperate someone, annoy to distraction", "phrase": "Monica: “Didn’t it drive you crazy to not know?”"}, {"word": "Play hard to get", "definition": "to be coy, intentionally shy, and fickle", "phrase": "Chandler: “Why are you out here when Josh is all the way out there?” Rachel: “Because I’m trying to play ‘hard to get’.” Emily is leaving and Ross wanted to have a special evening with her. Rachel organizes a bon voyage party for Emily so that she could hang out with Josh. Joshua admits he likes Rachel. Phoebe craves meat and Joe decided not to eat any meat until the baby is born to compensate for all meat Phoebe will eat."}, {"word": "Out of one’s hair", "definition": "no longer pestering or annoying to one", "phrase": ""}, {"word": "Pull off something", "definition": "to manage to make something happen Joe to", "phrase": "Chandler: “No way are you cool enough to pull off ‘Clint’.” Susan goes to London and hangs out with Emily. Ross is jealous. Phoebe gets to name a baby boy and tried to choose between Joe and Chandler. Rachel has a date with Josh and gets to wear her nighty to a restaurant."}, {"word": "Bring out the best in someone", "definition": "to cause someone to behave in the best manner", "phrase": "Ross: “She brings out this great side of me.” Ross and Emily decided to get married. Phoebe tried to play drums. Girls took their apartment back."}, {"word": "Run errands", "definition": "to take a short trip to do a specific thing", "phrase": "Chandler: “She’s got you running errands, picking up wedding dresses.”"}, {"word": "Hang in there", "definition": "an expression of encouragement to persist or stay calm in a challenging situation", "phrase": "Ross: “And I know someday this will happen for you too. You just hang in there.”"}, {"word": "Feel blue", "definition": "to feel sad", "phrase": "Rachel: “I feel blue.” (to the girls after she called Joshua, because Ross is getting married)"}, {"word": "Keep something on the mellow side", "definition": "to stay relaxed, keep it solid and be stress free", "phrase": "Ross: “Keep it on the mellow side. Just a couple of guys hanging around, playing poker.”"}, {"word": "Give it a try", "definition": "make an attempt at something", "phrase": "Phoebe: “Rachel’s gonna be there, can I just ask her?” Monica: “Yeh, ok, give it a try.”"}, {"word": "It’s the thought that counts", "definition": "one’s good intentions are more important than one’s actions", "phrase": "Rachel: “She doesn’t smoke.” Monica: “It’s the thought that counts.” (about giving Phoebe gifts to use after pregnancy)"}, {"word": "Hands down", "definition": "easily, unquestionably", "phrase": "Joe: “Westminster Abby – hands down, best abby I’ve ever seen.”"}, {"word": "Feel like doing something", "definition": "to want to do something, be in the mood for something", "phrase": "Phoebe: “The chocolate and water are for me. I didn’t feel like getting up.”"}, {"word": "Kiss something good bye", "definition": "to force and accept the loss od something", "phrase": "Ross: “And believe me, you can kiss your gazebo good bye.”"}, {"word": "Toe the line", "definition": "to do what you’re ordered or expected to do", "phrase": "Rachel: “Monica, what should I do?” Monica: “Just do the right thing.” Rachel: “What?” Monica: “Toe the line! Thread the needle! Think outside the box!”"}, {"word": "Think outside the box", "definition": "to think freely, to develop ideas that are unusual", "phrase": ""}, {"word": "Be in a bad place", "definition": "to be in a bad situation", "phrase": "Chandler: It wasn’t because I was in a bad place or anything Emily escapes and Ross is looking for her. Chandler and Monica are looking for a place to be alone and can’t find it anywhere. Rachel wants to talk to Ross and see if him saying her name meant anything."}, {"word": "Catch a break", "definition": "to receive a convenient opportunity/ get relief from difficulties", "phrase": "Ross: “I’ll go wander in the rain.” Rachel: “It’s not raining.” Ross: “I can’t catch a break.”"}, {"word": "Call the shots", "definition": "to decide on the course of action; to be in charge", "phrase": "Monica: “I’m calling the shots and I say, leave Ross alone and go get Dave.” Rachel asks Monica to make all her decisions. Rachel decided to tell Ross she still loves him. Monica and Chandler are hiding their relationships from others, and Chandler has to kiss all girls."}, {"word": "Steal someone’s thunder", "definition": "if someone steals your thunder, they do something that stops you from getting attention or praise, often by doing something better or more exciting than you", "phrase": "Phoebe: “I thought it was very sweet at first, but now I just think he’s trying to steal my thunder.” Phoebe is having babies. Chandler and Monica have a little fight because of Chandler’s jealousy. Joe has kidney stones. Phoebe wants to keep one baby. Phoebe has a weird doctor."}, {"word": "Burst the bubble", "definition": "to upset or destroy someone's belief, conviction, or mood by delivering news that runs contrary to what they hold to be true", "phrase": "Joe: “Sorry to burst that bubble, Phoebe, but selfless good deeds don’t exist.”"}, {"word": "Take a rain check", "definition": "to refuse an offer or invitation but with the hope or promise that it can be postponed to a later date or time", "phrase": "Ross: “Do you mind if I take a rain check? I’m waiting for a call from Emily.”"}, {"word": "Boil down to something", "definition": "to simplify or reduce to the most basic elements", "phrase": "Ross: “Anyway, it all boils down to this …”"}, {"word": "Give someone the creeps", "definition": "to make one feel frightened, nervous or disgusted", "phrase": "Rachel: “Oh, storage rooms give me the creeps.”"}, {"word": "Up for grabs", "definition": "available for anyone; not yet claimed", "phrase": "Rachel: “But the power? That is still up for grabs.”"}, {"word": "The ball is in one’s court", "definition": "to be someone else's move, play, or turn. (From tennis.)", "phrase": "Monica: “So, the ball is in his court?”"}, {"word": "Playing hard", "definition": "to-get", "phrase": ""}, {"word": "For crying out loud", "definition": "used for emphasis when annoyed or surprised by something", "phrase": "Chandler: “I rushed the stage at a concerts, for crying out loud.” The gang is at Monica’s sharing their worst Thanksgiving. They remember how Joe put a turkey on his head. Remembering how Chandler called Monica fat many years ago and then Monica got thin. Monica had cut Chandler’s toe. He found out and got mad at her."}, {"word": "Give something a shot", "definition": "to give something a chance", "phrase": "Monica: “I’ll give it my best shot.”"}, {"word": "EI", "definition": "Emotional Intelligence", "phrase": ""}, {"word": "Have somebody’s interests at heart", "definition": "to be concerned about someone and behave accordingly", "phrase": "Joe: “But we had our best friend’s interests at heart.”"}, {"word": "Brother", "definition": "sister relationships", "phrase": ""}, {"word": "Friendship", "definition": "A friend in need is friend in deed", "phrase": ""}, {"word": "Go out on a limb", "definition": "to put oneself in a vulnerable position; take a risk", "phrase": "Ross: “I’m gonna go out on a limb and say – no divorces in ’99.”"}, {"word": "Be on fire", "definition": "to be doing very well; to be very enthusiastic", "phrase": "Monica: “Am I on fire today, or what?”"}, {"word": "Make one’s peace", "definition": "to reconcile with or accept something that previously was a source of stress, conflict, etc", "phrase": "Ursula: “I thought she was dead, so I’ve made my peace.”"}, {"word": "Neither here nor there", "definition": "irrelevant or unimportant; having no bearing upon the current situation", "phrase": "Frank: “I just can’t believe you’re my daughter. You’re so pretty.”"}, {"word": "Get out of hand", "definition": "To become chaotic and unmanageable, as of a situation", "phrase": "Chandler: “This is totally getting out of hand, she wants me to put lotion on her.”"}, {"word": "Back on one’s feet", "definition": "well or successful again after being ill or having problems", "phrase": ""}, {"word": "On the lam", "definition": "running away (especially from the police)", "phrase": "Monica: “What are you doing?” Chandler: “I’m going on the lam.” (when Ross saw them) Ross finds out about Chandler and Monica. Joe dates a girl who is tiny but hits him all the time. Ross is not liked in his new building, Phoebe tried to help him but fails. Chandler freaks out because everybody speaks about their marriage. How to get people to like you Fear of commitment Foolish decisions"}, {"word": "Crank something up", "definition": "start something up", "phrase": "Joe to Rachel: “Maybe, you and I crank it up a notch.”"}, {"word": "Be back on track", "definition": "to return to the right path, or the right direction", "phrase": "Ross: “If I can just get it to pivot, we’ll be back on track.”"}, {"word": "Give somebody a shot", "definition": "to give someone a chance, an opportunity", "phrase": ""}, {"word": "Rue the day", "definition": "to bitterly regret that something has happened", "phrase": "Phoebe: “Monica’s going to rue the day that she put me in charge of cups and ice.”"}, {"word": "Worth a shot", "definition": "to be worth some thought", "phrase": "Rachel: “I’m telling you he’s worth a shot.” Ross tries to flirt with a pizza delivery girl but fails. Joe’s grandma came to see him in Law and Order but he was cut out of the show. Monica asks Phoebe to give her her earrings back. It turns out Rachel had lost them."}, {"word": "Out of the blue", "definition": "unexpectedly", "phrase": "Emily: “I know this is out of the blue, but I’m getting married tomorrow.”"}, {"word": "One’s number is up", "definition": "somebody is about to die or experience something very unpleasant", "phrase": "Ross: “I thought my number was up I had an actual near-death experience.” On a ride with Gary a car backfired, and Ross thought he had a near-death experience. Joe dives in to save his sandwich, everybody thinks he was saving Ross. Emily called Ross and Rachel accidentally erased the message. Heroism Saving a friend"}, {"word": "Open one’s eyes", "definition": "to see or realize the truth about a person or situation", "phrase": "Chandler to Gary: “I’m trying to open your eyes. If you live with Phoebe, she’s always gonna be there.”"}, {"word": "Push one’s buttons", "definition": "to do things that create a very strong emotional reaction in one, especially anger, irritation, or exasperation", "phrase": "Phoebe: “Man, that guy can push my buttons.”"}, {"word": "Go for a bite", "definition": "to go out to eat", "phrase": "Monica to Chandler about Richard: “He asked me if I wanted to go for a bite and I did.”"}, {"word": "Cross a line", "definition": "to act in an unacceptable or inappropriate way,", "phrase": "Rachel: “I’ve been walking like this since the place? You have so crossed a line.” Everybody goes to Vegas to surprise Joe. Monica and Chandler first have a fight, but then make up and decide to get married. Joe found his identical hand twin. Ross drew on Rachel’s face and they’re stuck in a hotel room."}, {"word": "Wake up call", "definition": "a sign or warning that alerts one to negative or dangerous behavior or circumstances", "phrase": "Chandler: “It was like a wake-up call that Monica and I are moving so fast, you know.”"}, {"word": "Make it up to somebody", "definition": "compensate for something bad a person had from", "phrase": "Joe: “Let me make it up to you.” Ross and Rachel realize they are married. Chandler and Monica decide not to get married but move in together. Joe and Phoebe are in the car going home."}, {"word": "Lose one’s nerve", "definition": "to get scared", "phrase": "Chandler: “I can get out, ‘Joe, I have to…’ and then I lose my nerve and finish with, ‘go to the bathroom’.”"}, {"word": "Cry one’s eyes out", "definition": "to cry for an extended period of time", "phrase": "Monica: “When we told Joe he cried his eyes out.” Ross tells Rachel he got an annulment but they are still married."}, {"word": "Be in the same place", "definition": "to have the same feelings", "phrase": "Phoebe: “Ok, but be careful. Rachel’s not in the same place you are.”"}, {"word": "Hold the phone", "definition": "wait a minute", "phrase": "Chandler: “Hold the phone, you’re not talking about Chuckles University?”"}, {"word": "Be shocked to one’s core", "definition": "to be fully or completely shocked", "phrase": "Phoebe: “This is inexcusable. I’m shocked to my very core.”"}, {"word": "Fair and square", "definition": "completely fairly, justly, within the rules", "phrase": "Ross: “I’m sorry you lost your money. But I won it fair and square.”"}, {"word": "Get something out in the open", "definition": "to make something publicly known or visible", "phrase": "Joe: “All right, let’s just get this out in the open. You’re hot. I’m lovable.”"}, {"word": "Security", "definition": "not caring what others think", "phrase": ""}, {"word": "Be into someone", "definition": "to like someone, have feelings for them", "phrase": "Ross: “Still, I could tell. She was into me.”"}, {"word": "Be an item", "definition": "to have intimate relationships", "phrase": "Rachel: “Ralph and I were an item, but we’re not anymore.”"}, {"word": "Walk in on someone", "definition": "to interrupt someone or something by entering a placeю", "phrase": "Janine to Jack Geller: “I l ive across the hall. You walked in on my when I was changing.” Rachel is making Thanksgiving dessert and messes up the trifle. Monica’s parents don’t like Chandler because Ross had told them he had smoked pot. Phoebe had a dream about Jack Geller. Ross and Joe want to go to Joe’s and celebrate Thanksgiving with Janine and her dancer-friends."}, {"word": "Have a shot", "definition": "to make an attempt or have a turn at doing something", "phrase": "Joe: “Let me dance with her. I like her, and I think I have a shot.”"}, {"word": "Loosen the purse strings", "definition": "to increase the availability of money for spending purposes", "phrase": "Phoebe to Ross: “You buy your sheets at a flea market? Come on, you gotta loosen the purse strings a little.”"}, {"word": "Back out of something", "definition": "to withdraw from something, such as an agreement, negotiations, argument, etc", "phrase": "Monica: “She tried to back out of it, but it was obvious. She picked Rachel.”"}, {"word": "Get away with something", "definition": "avoid punishment", "phrase": "Rachel: “you can’t let him get away with that.”"}, {"word": "Get back at someone", "definition": "to revenge", "phrase": "Rachel: “Ross, I’m telling you, she is using you to get back at me.”"}, {"word": "Spice things up", "definition": "to make something more interesting, lively, or sexy", "phrase": "Phoebe to Ross: “Maybe you can spice things up a little.”"}, {"word": "Make this up to someone", "definition": "to compensate", "phrase": "Monica: “You went through effort to make this tape. I’ll make this up to you.”"}, {"word": "Last minute", "definition": "done at the very last possible moment or opportunity", "phrase": "Monica: “This is last minute, so I want to apologize for the mess.”"}, {"word": "Off the top of one’s head", "definition": "without giving it too much thought or without precise knowledge", "phrase": "Chandler: “Well, this is just off the top of my head now, but I have this friend.”"}, {"word": "Give someone a hard time", "definition": "annoy or harass someone", "phrase": "Ross: “I know you guys like to give me hard time, but it means a lot to me.”"}, {"word": "Do justice to something", "definition": "to represent or portray something accurately", "phrase": "Phoebe: “This suit does not do justice to what’s underneath.”"}, {"word": "Be over the line", "definition": "beyond what is considered appropriate or acceptable", "phrase": "Chandler: “You’re right. I have no excuses. I was so over the line.”"}, {"word": "Judge the book by its cover", "definition": "to look at the exterior, appearance only", "phrase": "Chandler: “Are you judging them by their covers? Because you’re not supposed to do that.”"}, {"word": "Taste one’s own medicine", "definition": "to have the same unpleasant experience or treatment that one has given to others", "phrase": "Phoebe: “I have tasted my own medicine and it is bitter.”"}, {"word": "Jump at the chance", "definition": "to take a chance, use the opportunity", "phrase": "Paul: “So, Ross was in college and decided to jump at the chance to take a young girl to her high school prom.”"}, {"word": "Jog one’s memory", "definition": "To cause someone to remember something", "phrase": "Joe: “Ok, maybe this will jog your memory.”"}, {"word": "Dig a little deeper", "definition": "to make a greater effort to do something, to search thoroughly for information", "phrase": "Phoebe: “Come on Ross, you’re a paleontologist, dig a little deeper.”"}, {"word": "Stick with something", "definition": "to remain consistent or loyal in one's behavior concerning something", "phrase": "Phoebe: “Can you just imagine getting down on one knee and handing her this gorgeous piece of weaponry?” Chandler: “Yeh, I’m gonna stick with the ring.”"}, {"word": "Freeze someone out", "definition": "to lock someone out socially; to isolate someone from something or a group", "phrase": "Ross: “Maybe, we don’t talk to him at all.” Joe: “Ooh, freeze him out. I like it!”"}, {"word": "Water under the bridge", "definition": "a past occurrence that cannot be undone", "phrase": "Joe to Chandler about their fight: “And we’re going to be friends again.” Chandler: “What?” Joe: “Water under the bridge.”"}, {"word": "Mess something up", "definition": "to make an error; to do something wrong;", "phrase": "Joe: “You’re gonna mess it up, let me do it.”"}, {"word": "Keep tabs on someone", "definition": "to watch a person or a situation carefully", "phrase": "Chandler: “We were talking about marriage and how it’s just the way for the government to keep tabs on you.”"}, {"word": "Throw someone off the track", "definition": "to misdirect one away from their pursuit; to steer one's investigation or suspicions in the wrong direction", "phrase": "Phoebe: “She only suspects something, so just throw her off the track.”"}, {"word": "Blow a chance", "definition": "to lose an opportunity to do something", "phrase": "Chandler to Richard: “You had your chance and you blew it.”"}, {"word": "Shake it off", "definition": "to rid or free oneself from someone or something that one finds aggravating, upsetting, or annoying", "phrase": "Ross: “You scared me a minute.” Rachel: “I know. Shake it off.”"}, {"word": "No strings attached", "definition": "having no special conditions, restrictions, obligations, or arrangements that must be met", "phrase": "Ross: “One night, just sex. No strings attached.”"}, {"word": "Leave something up in the air", "definition": "to leave a matter undecided", "phrase": "Ross: “Hey, I just realized. We kind of left some stuff up in the air.”"}, {"word": "Call it off", "definition": "to cancel a project, event, or activity", "phrase": "Ross: “Rachel, I’ve been thinking, I don’t think us getting back together is such a good idea. I’m calling it off.”"}, {"word": "Too many cooks", "definition": "too many people are trying to control, influence, or work on something, with the quality of the final product suffering as a result", "phrase": "Rachel to Chandler: “Chandler, too many cooks!”"}, {"word": "Off the rack", "definition": "of clothes, mass-produced and ready to wear", "phrase": "Monica: “I will have to wear off the rack.”"}, {"word": "Get on board with", "definition": "to agree to do something with somebody", "phrase": "Phoebe: “Chandler, money and a firm hand, I could finally get on board with.”"}, {"word": "Be in for a rough ride", "definition": "be about to have exciting or difficult times", "phrase": "Rachel to Joe: “You’re in for a rough ride!”"}, {"word": "Tone it down", "definition": "to cause something to have less of an impact on the senses of sight or sound", "phrase": "Rachel to Joe: “I will try to tone it down and stop yelling.”"}, {"word": "Jump through hoops", "definition": "do just about anything to please someone", "phrase": "Joe to the director: “You think you’re special sitting in your small- hall building, making stars jump through hoops for you.”"}, {"word": "Stay clear of", "definition": "to keep one's distance from something, usually something dangerous", "phrase": "Rachel: “I’d stay clear of Phoebe.”"}, {"word": "Pull at the thread", "definition": "to start speaking about a specific topic, usually not pleasant", "phrase": "Monica to Chandler: “Do you really want to pull at that thread?”"}, {"word": "Throw something in someone’s face", "definition": "to confront someone with a problem or criticism", "phrase": "Ross: “I knew you’d throw it in my face. What more do you want? We apologized and apologized.”"}, {"word": "Get all worked up", "definition": "to become excited and agitated about something", "phrase": "Chandler: “Before Joe gets all worked up and starts calling everybody ‘bitch’.”"}, {"word": "Take a lot out of someone", "definition": "make someone tired", "phrase": "Joe to Ross: “This judges stuff took a lot out of me.”"}, {"word": "Slip something in", "definition": "to insert something gradually, easily, or without being noticed", "phrase": "Joe to Rachel: “Just casually slip it in, you know. Lay the groundwork. Tell her, I’m a loner.”"}, {"word": "Have the lead in", "definition": "to be ahead of everyone else, the leader in some competition", "phrase": "Chandler: “Ok, Rachel has 48 and and Phoebe has the lead in vegetables.”"}, {"word": "Pull it off", "definition": "to manage to make something happen", "phrase": "Monica: “The guy in the catalogue pulled it off.”"}, {"word": "Hit on", "definition": "to flirt with someone, often when it is unwelcome", "phrase": "Chandler: “You got hit on by Fire-Beard?”"}, {"word": "Pipe down", "definition": "quiet down", "phrase": "Chandler to people who wanted the candy: “Be quiet! Pipe down!” Monica decides to make candy to get to know their neighbors. People loved her candy and can’t get enough. Rachel wrote a fake evaluation for Tag as a joke with intimate language and sketches. He sent it out to HR and they almost got in trouble. Ross gives Phoebe her first bike but she only walks it because she doesn’t know how to ride it. Ross teaches her to ride a bike."}, {"word": "Shake someone down", "definition": "extort money from someone", "phrase": ""}, {"word": "Drive someone out", "definition": "to force someone out of an elective space", "phrase": "Rachel: “Phoebe, did you get all this stuff to Joe to try and drive me out of the apartment?” Ross can’t find a Santa costume and comes as a Holiday Armadillo to bring presents to Ben. Chandler dressed like Santa and came to congratulate Ben too. Joe came as a Superman. Phoebe tries to drive Rachel out of Joe’s apartment giving him annoying gifts like drums and tarantula. Chandler can’t slip money to a man at the restaurant so they have to wait for a long time for their table."}, {"word": "Be a sweet tooth", "definition": "to love sweets and deserts", "phrase": "Chandler: “You’ve got to try this cheesecake.” Rachel: I’m not that much of a sweet tooth.”"}, {"word": "Part ways", "definition": "to separate, go different directions", "phrase": "Phoebe: “Ok, this is where you and I part ways.”"}, {"word": "Take something for a spin", "definition": "to take a brief, leisurely ride in a vehicle, especially an automobile", "phrase": ""}, {"word": "Be in a great place", "definition": "to have a great situation, good circumstances in life", "phrase": "Monica: “Rach, you’re in a great place in your life.”"}, {"word": "Bounce ideas off someone", "definition": "to tell something to someone in order to solicit feedback about it", "phrase": "Monica: “Thanks for coming, guys. We just wanted to bounce some ideas off of you about the wedding ceremony.”"}, {"word": "A fairy", "definition": "tale of the digital age", "phrase": ""}, {"word": "Changes in a career", "definition": "Jessica", "phrase": "Themes:"}, {"word": "Fill somebody’s shoes", "definition": "to take the place of some other person and do that person's work satisfactorily", "phrase": "Joe: “She’s been on the show forever. It’s going to be really hard to fill her shoes.”"}, {"word": "Have a bone to pick with someone", "definition": "to have a disagreement to discuss with someone", "phrase": "Ross to Rachel: “I have a bone to pick with you (scolding her for teaching Ben some pranks)”."}, {"word": "Bode well for", "definition": "having assumption or prediction", "phrase": "Chandler: “It bodes well for me that the speed impresses you.”"}, {"word": "Out of the woods", "definition": "out of danger", "phrase": "Phoebe: “It’s a 6-hour pill. That’s it. I’m out of the woods.”"}, {"word": "Narrow something down", "definition": "to reduce a list of possibilities from many to a selected few", "phrase": "Monica: “So, the wedding caterer sent me this list of 12 appetizers. I have to narrow it down to six.”"}, {"word": "Bring someone in the loop", "definition": "to make somebody involved", "phrase": "Ross to his student: “Well, this brings me in the loop a little.”"}, {"word": "Yank someone’s chain", "definition": "informal – to deceive leading to believe something untrue", "phrase": ""}, {"word": "Give somebody a hand", "definition": "help somebody", "phrase": "Monica: \"Phoebe, could you give me a hand? I am going to fix a guest bedroom.\""}, {"word": "Be yourself", "definition": "tuxes", "phrase": ""}, {"word": "Be up to something", "definition": "to be plotting something", "phrase": "Rachel: “What have you guys been up to?”"}, {"word": "Mess with someone", "definition": "to bother or interfere with someone or something", "phrase": "Monica: “They think they’re so slick messing with us.”"}, {"word": "Back down", "definition": "to retreat from a particular idea or course of action", "phrase": "Chandler about Phoebe: “She is not backing down.”"}, {"word": "Take for a spin", "definition": "to take a brief, leisurely ride in a vehicle, especially an automobile", "phrase": "Ross: “Can I get the keys? Thought I’d take that bad boy for a spin.”"}, {"word": "Cat’s in the cradle", "definition": "meaning: fathers’ and sons’ hard relationships", "phrase": ""}, {"word": "Ball and chain", "definition": "calling a spouse or anything that limits your freedom", "phrase": "Chandler about Monica: “Yeh, from now in it’s going to be the four of you guys and me and the missus, the wife, the old ball and chain.”"}, {"word": "Flip someone out", "definition": "(slang) to cause someone to suddenly become emotional and lose control of oneself", "phrase": "Monica: “Honestly, ever since we got engaged I’ve been waiting for something to flip you out.”"}, {"word": "Pull it together", "definition": "to calm oneself down and begin to think or act appropriately", "phrase": "Joe to Richard: “Please, can you pull it together?”"}, {"word": "On account of someone", "definition": "because of or for the benefit of someone or something", "phrase": "Richard: “I’d hate you to miss anything like that on account of me.”"}, {"word": "Frown on something", "definition": "to show one's disapproval of something", "phrase": "Phoebe: “Don’t tell them Monica is pregnant because they frown on that.” Everyone is at a rehearsal dinner and Chandler is freaking out before the wedding after he hears on the phone they’re going to become “the Bings”. Joe plays a part in a movie and has to get out earlier to perform a ceremony. Chandler took off and Ross and Phoebe found him in his office. Phoebe found a pregnancy test in trash and thinks Monica is pregnant."}, {"word": "Steal somebody’s thunder", "definition": "to steal attention, lessen someone's force or authority", "phrase": "Phoebe: “I didn’t want to say I was pregnant. I didn’t want to steal your thunder.\""}, {"word": "Hold down the fort", "definition": "assume responsibility, especially in another's absence; also, maintain a secure position", "phrase": "Mona: “There’re so few genuinely nice guys out there.” Joe: “Tell me about it. I feel like I’m holding down the fort all by myself.” It's Monica and Chandler’s wedding, Chandler learned to dance but put on slippery shoes. Girls find out that Rachel is pregnant. Ross keeps dancing with little girls to impress Mona. Joe performs for the potential Broadway show director."}, {"word": "Get it over with", "definition": "to complete an unpleasant or tedious but necessary task promptly", "phrase": "Phoebe to Rachel: “Tell the father and get it over with.”"}, {"word": "Call it even", "definition": "something is equal and even", "phrase": "Chandler: \"You opened all the presents without me. We were gonna do it together.\" Monica: \"You kissed another woman?\" Chandler: \"Call it even?\""}, {"word": "Right back atcha", "definition": "an exclamation used to express the same sentiment back to the original speaker; same as \"you too\" and \"same to you.\"", "phrase": "Tag: ”Nice sweater”. Ross: \"Right back atcha.\""}, {"word": "Get something out of someone’s system", "definition": "to get something out of one's thoughts or inclinations", "phrase": ""}, {"word": "Catch up with someone", "definition": "to meet again at a later point in time", "phrase": "Ross: “Well, I guess, I’ll catch up with her later.”"}, {"word": "Get an earful", "definition": "to receive a lengthy reprimand or lecture", "phrase": "Ross: “But the condom company got an earful.”"}, {"word": "Hang out with someone", "definition": "to spend time with someone or at some place", "phrase": "Chandler: “We’re just kind of excited because we finally have a couple to hang out with.”"}, {"word": "Put something to rest", "definition": "soothe and dispel fear, anxiety, grief, and similar unpleasant emotions", "phrase": "Phoebe: “We’ll have to think of some other way to put the whole ‘who came on to whom’ thing to rest.”"}, {"word": "Get around something", "definition": "to avoid or elude an authority or regulation that constitutes a barrier", "phrase": "Chandler: “Do you know how I can get around the office computer network?”"}, {"word": "Have what it takes", "definition": "to have the ability to do something", "phrase": "Chandler: “I don’t know if he has what it takes.”"}, {"word": "Come on strong", "definition": "to flirt in an abrasive or overly forceful way, to impress people initially as very aggressive and assertive", "phrase": ""}, {"word": "Hit on someone", "definition": "to flirt with someone; to make a pass at someone", "phrase": "Phoebe: “Wasn’t Joe also hitting on her at the wedding?”"}, {"word": "Flip out", "definition": "to suddenly become emotional", "phrase": "Rachel: “Because I know he’s gonna flip out and I hate it when he gets angry.”"}, {"word": "No big deal", "definition": "used to say that something is not important or not a problem", "phrase": "Ross: “It was no big deal. The rumor was that you had both male and female reproductive parts.”"}, {"word": "Get along with someone", "definition": "to have a good relationship with someone", "phrase": "Ross: “It turns out Ben and Sting’s son do not get along.”"}, {"word": "Get down to business", "definition": "to begin doing what needs to be done", "phrase": "Joe: “Well, I’ll let you two ‘fashists’ get down to business.”"}, {"word": "Closed book", "definition": "a secret, mystery, or puzzle", "phrase": "Ross to Rachel: “You were a closed book, I’m not a mind-reader.”"}, {"word": "Right back at you", "definition": "an exclamation used to express the same sentiment back to the original speaker", "phrase": "Joe: “You’re my friend.” Rachel: “Right back at you.”"}, {"word": "Take someone out", "definition": "invite someone out to eat and pay for them", "phrase": "Joe to Rachel: “Hey, you know what? Why don’t I take you out?”"}, {"word": "Come at a price", "definition": "to have a negative or unpleasant consequence due to some action", "phrase": "Phoebe: “Chandler couldn’t have gotten this good.” Chandler: “I did but it came at a price.”"}, {"word": "Be not one's place", "definition": "not one's role to do something", "phrase": "The doctor: \"I know it’s really not my place, but please don’t name your child Pheebo.\""}, {"word": "Come around", "definition": "to change one's view or opinion of someone or something", "phrase": "Rachel: “I’m really coming around on the name Ruth.”"}, {"word": "Off the table", "definition": "to be withdrawn or no longer available, as for consideration, acceptance, discussion, etc", "phrase": "Ross: “I’m not falling for that. Ruth is off the table.”"}, {"word": "Throw someone a bone", "definition": "to attempt to appease someone by giving them something trivial or of minor importance or by doing some small favor for them", "phrase": "Phoebe: “Throw me a bone here.”"}, {"word": "Run a tight ship", "definition": "to be very strict in managing an organization or operation", "phrase": "Joe to Chandler: “Monica runs a tight ship around here.”"}, {"word": "Slip into something", "definition": "to easily put on an article of clothing", "phrase": "Monica: “I’ll be right out. I’m slipping into something a little less comfortable and a little more slutty.”"}, {"word": "Get back on the horse", "definition": "to return to or resume an activity that one has previously failed at or had difficulty with", "phrase": "Monica: “You’ve got to get past this. Just get back on the horse.”"}, {"word": "Butter someone up", "definition": "to treat someone especially nicely in hopes of receiving special favors", "phrase": ""}, {"word": "Bum someone out", "definition": "to discourage or make someone sad", "phrase": "Phoebe: “Joe, you bummed him out!”"}, {"word": "Get over someone", "definition": "to recover from difficulties regarding someone or something", "phrase": "Joe: “Anyway, it will just take me awhile to get over her.”"}, {"word": "Have second thoughts", "definition": "change your opinion about something; have doubts about something", "phrase": "Monica: “I’ve had second thoughts about that. Do you realize how hard that would be to clean.”"}, {"word": "Get shut down", "definition": "get rejected, strongly discouraged, or prevented from continuing with one's course of action", "phrase": "Joe: “You guys don’t know what it’s like to get shot down like that.”"}, {"word": "A head scratcher", "definition": "a thoroughly complex or difficult mystery, problem, puzzle, or riddle", "phrase": "Monica: “Joe, Rachel has got this big work problem, it is a head scratcher.”"}, {"word": "Come on a little strong", "definition": "to flirt in an abrasive or overly forceful way", "phrase": ""}, {"word": "Go out of the way", "definition": "to do everything possible in one’s power", "phrase": "Chandler: “Ralph Loren is really going out of their way to show they’re not in a baby-buying business.”"}, {"word": "Put oneself out there", "definition": "to put in a great deal of effort; to inconvenience oneself or go through a lot of trouble", "phrase": "Joe to Rachel: “I haven’t thought at all about how I put myself out there and said all that stuff.”"}, {"word": "Mind’s eye", "definition": "the ability to imagine or remember images or scenes", "phrase": "Parker: “On my way here I pictured it in my mind’s eye. And now I’m like, mind’s eye, you had no idea.”"}, {"word": "Out of wedlock", "definition": "of parents not legally married to each other", "phrase": ""}, {"word": "Call a spade a spade", "definition": "to call something by its right name; to speak frankly about something, even if it is unpleasant", "phrase": "Phoebe to Joe: “Let’s call a spade a spade, this party sticks.”"}, {"word": "Keep something in check", "definition": "to restrain someone or something", "phrase": "Rachel: “Come on, Joe, you will totally keep it in check this time.”"}, {"word": "Give it a rest", "definition": "to stop talking about some topic or subject", "phrase": "Monica to Phoebe: “Oh, give it a rest.”"}, {"word": "Small talk", "definition": "a conversation about non-important issues like weather", "phrase": "Phoebe: \"Isn’t it great, one less person we have to make small talk with?\""}, {"word": "Do one’s best", "definition": "to do as well as one possibly can at something", "phrase": "Phoebe to Chandler: “We’ll just do our best (about helping him with the interview) .”"}, {"word": "Hold your breath", "definition": "to wait for something specific to happen", "phrase": "Joe to Ross: “This is going to be tough. Hold your breath.”"}, {"word": "Take the liberty", "definition": "to do something without first seeking out or asking someone's permission", "phrase": "Monica: “I took the liberty of fashioning a star out of aluminum foil.”"}, {"word": "You snooze, you lose", "definition": "if you do not pay attention, you will miss a good opportunity", "phrase": "Monica: “Well, Ross didn’t care enough to be here, so he’s out. You know – you snooze, you lose.”"}, {"word": "Top", "definition": "notch - the absolute best", "phrase": "Chandler: “Good job, Joe! Well done! Top-notch!” Rachel is late with having a baby. She is too hard to be around, everything annoys her and Ross irritates her immensely. Chandler falls asleep on Joe’s premier and Joe gets mad Phoebe and Monica bet on Rachel to have a baby. Monica keeps losing money. Patience Gambling Irritation Managing emotions"}, {"word": "A snooze fest", "definition": "a boring event", "phrase": "Phoebe: “The miracle of birth is a snooze fest.”"}, {"word": "Back off", "definition": "Go away! Stop bothering me!", "phrase": "Monica: “Okay, then, back off, mister!”"}, {"word": "Make a move", "definition": "to make the initial steps necessary to achieve or accomplish something", "phrase": ""}, {"word": "Dial down", "definition": "to lessen something, especially in intensity", "phrase": "Phoebe: “Joe, we’re trying to dial down the crazy.”"}, {"word": "Take one’s breath away", "definition": "to amaze and impress greatly", "phrase": "Rachel: “Wow, he kind of takes your breath away, doesn’t he?”"}, {"word": "Dating", "definition": "get the background information", "phrase": ""}, {"word": "Get carried away", "definition": "to be overcome by emotion or enthusiasm", "phrase": "Joe: “All right, let’s not get carried away! ”"}, {"word": "Rush into something", "definition": "make a big decision too quickly", "phrase": "Ross about Rachel: “We’re not going to rush into anything.”"}, {"word": "Run out of something", "definition": "to be depleted of something; to use or sell all of something that is available", "phrase": "Phoebe: “No, they ran out of ‘It’s a Girl!’, but I can fix this one.”"}, {"word": "Break one’s heart", "definition": "to cause someone great emotional pain, to cause one to feel great sadness", "phrase": "Monica: “It breaks your heart, doesn’t it?”"}, {"word": "Go down the road", "definition": "to act, behave, or do things in a particular way or manner", "phrase": "Ross: “I don’t what I was thinking going down that road again with us.”"}, {"word": "A new", "definition": "born baby", "phrase": ""}, {"word": "Challenges with a new", "definition": "born baby", "phrase": ""}, {"word": "Slim pickings", "definition": "almost nothing or a small amount", "phrase": "Monica: “Did you find anything?” Chandler: “Slim pickings.”"}, {"word": "Have a falling out", "definition": "a problem in a relationship when people don’t see each other for a while", "phrase": "Joe: “It’s because we had a bit of a falling out. Mike hit my mom with a car.” Rachel’s baby can’t stop crying which drives Rachel, Monica and Phoebe crazy. Chandler fell asleep at the meeting, unknowingly agreed to the proposition and now they are moving to Tulsa Ross is mad at Joe. Joe wanted Ross to hit him, then ducked and Ross ended up hitting himself."}, {"word": "Catch somebody off guard", "definition": "to catch a person at a time of carelessness", "phrase": "Phoebe to Mike: “Oh, you just caught me off guard!”"}, {"word": "Drama queen", "definition": "a person who gives exaggerated, emotional reactions to relatively minor events or situations", "phrase": "Phoebe to Ross: “Yeh, you’re a bit of a drama queen.”"}, {"word": "A rare breed", "definition": "a person or thing with characteristics that are uncommon among their kind", "phrase": ""}, {"word": "Blow someone off", "definition": "to fail to keep an appointment with someone, to abandon or leave someone behind in a rude way", "phrase": ""}, {"word": "Ring a bell", "definition": "to seem familiar, remind one of something, or stimulate an incomplete or indistinct memory", "phrase": ""}, {"word": "Long", "definition": "term relationship", "phrase": ""}, {"word": "Show one’s true colors", "definition": "to reveal oneself as one really is", "phrase": "Phoebe: “I think it’s too soon to show him my true colors.”"}, {"word": "Kick up one’s heels", "definition": "to enjoy oneself without restraint", "phrase": "Ross: “Really the world is your oyster. Kick up your heels. Paint the town red.”"}, {"word": "Hit the bricks", "definition": "to start walking; to go into the streets", "phrase": "Ross: “The baby is fine, now scram. Yeh, hit the bricks.”"}, {"word": "Pull oneself together", "definition": "to calm oneself down and begin to think or act appropriately", "phrase": "Ross: “Rach, you did not leave the water running. Please, just pull yourself together.”"}, {"word": "Set someone up for something", "definition": "to set the scene for something to happen to someone", "phrase": "Chandler to Joe: “I need you to set me up for a joke.”"}, {"word": "Damage control", "definition": "measures to minimize or curtail loss or harm", "phrase": "Joe to Monica about Chandler: “You need to do some damage control.”"}, {"word": "Blow one’s mind", "definition": "to extremely impress, overwhelm, or excite one", "phrase": "Joe to a male nanny: “Wow, you blow my mind!” Monica has a guy at work who’s funnier than Chandler and tells him about it. Chandler can’t stand that and tries to show off his humor. Rachel and Ross hired a male nanny, and Ross is not comfortable with it. Phoebe and Mike exchanged keys, but then David came to town."}, {"word": "Get someone to settle down", "definition": "get someone to begin living a stable, orderly life; also, marry", "phrase": "Joe: “How did she get me to settle down?”"}, {"word": "Slap in the face", "definition": "an insult; an act that causes disappointment or discouragement", "phrase": "Amy: “You know, this is such a slap in the face.”"}, {"word": "Ray of hope", "definition": "the one small sign of improvement in a difficult situation", "phrase": "Chandler: “So, my friends die, I get Emma, then my wife dies, then Emma, the one tiny ray of hope in my life gets taken away from me?”"}, {"word": "Bring it on", "definition": "show me", "phrase": "Rachel: “I do pilates.” Amy: “I do yoga.” Rachel: “Bring it on.” Rachel invites her sister Amy to Monica and Chandler's for Thanksgiving. Joe can’t lie, and Phoebe teaches him. The argument is started about who would raise Emma if Ross and Rachel die. Monica is worried about her fancy plates."}, {"word": "Dead on", "definition": "exactly right; perfect", "phrase": ""}, {"word": "Can't get enough of something", "definition": "to love or enjoy something, to desire a large amount of something", "phrase": "Ross: “I can't get enough of dinosaurs.”"}, {"word": "Make passes at someone", "definition": "to flirt with or suggest sexual activity with someone", "phrase": "Chandler: “I’m not used to girls making passes at me.”"}, {"word": "Put one’s foot down", "definition": "to be unyielding or inflexible in one's position or decision", "phrase": "Chandler to Monica: “I’m putting my foot down.”"}, {"word": "Be short on something", "definition": "to not have enough of some quality", "phrase": "Phoebe: “I’m sorry, I’m just a little short on cash.”"}, {"word": "I’m rubber, you’re glue", "definition": "whatever you say bounces off me and stinks to you, whatever you say is ignored, insults refer to the insultor", "phrase": "Rachel to Gavin: “Well, did they mention that I’m rubber and you’re glue?”"}, {"word": "Squeeze somebody out", "definition": "to force or push someone out of a particular place or role", "phrase": "Rachel: “I’m just afraid if I don’t come back now, this guy will try and squeeze me out.”"}, {"word": "Fill somebody in", "definition": "tell the latest news, bring up to date", "phrase": "Rachel to Gavin: “Why don’t you fill me in on what you’ve been up to?”"}, {"word": "Raise the bar", "definition": "to raise the standards of quality that expected of or required for something", "phrase": "Phoebe: “Rise to the challenge, Tribbiani, because I just raised the bar. Come join me up here.”"}, {"word": "Go after someone", "definition": "to pursue someone, try to get", "phrase": "Ross: “Joe, about Molly. I would really prefer if you didn’t go after her.”"}, {"word": "Off limits", "definition": "forbidden", "phrase": "Ross about Molly: “Forget about her. She is off limits.”"}, {"word": "Run interference", "definition": "help somebody by dealing with problems for them", "phrase": "Chandler: “Is this your long-term plan for me to run interference? Because I could get a job any day now.”"}, {"word": "Set one’s mind on something", "definition": "concentrate on or be determined to achieve", "phrase": "Chandler: “When Joe sets his mind on something, more often than not he’s going to have sex with it.”"}, {"word": "Make up for something", "definition": "to atone or act as compensation for some unfairness, misdeed", "phrase": "Gavin: “OK, I got you a present to make up for being such a jerk to you.”"}, {"word": "Put one’s life on hold", "definition": "to pause, postpone, or suspend an activity", "phrase": "Ross: “You know, I’ve been putting my life on hold and concentrating on Emma.”"}, {"word": "Come on to someone", "definition": "to flirt with or otherwise show romantic or sexual interest in one", "phrase": "Ross: “There’s an anthropologist at school who totally came on to me during the interdepartmental potluck dinner.”"}, {"word": "Get stood up", "definition": "to fail to show up for a meeting or a date", "phrase": "Phoebe to Joe: “We’ll just tell her the date’s off, but we don’t tell Ross. He goes to the restaurant and gets stood up.”"}, {"word": "The joke’s on (one)", "definition": "the joke has backfired on someone", "phrase": "Rachel: “Well, I guess, then the joke’s on him.” Phoebe and Joe set Ross and Rachel on horrible dates. Rachel’s date turns out terrible and Ross’s date doesn't show up. Phoebe and Joe think their plan is working. Monica and Chandler are watching Emma but have to leave her for a while."}, {"word": "So far so good", "definition": "you’re in the middle of doing something and everything has been going well", "phrase": "Joe: “And he said I should think less.” Monica: “So far so good.”"}, {"word": "Mind one’s own business", "definition": "to not interfere in someone else's affairs; to not pry or be nosy", "phrase": "Ross: “I was just minding my own business, seeing what kind of trouble Spider-Man got into that week.”"}, {"word": "Take a hit", "definition": "to be damaged or badly affected by something", "phrase": "Monica: “I haven’t seen my savings take a hit like this since I was a kid and they came up with Double Stuf Oreos.”"}, {"word": "Making too big a deal out of something", "definition": "thinking something is more important than it actually is", "phrase": "Chandler: “You know what, I think we’re making too big a deal out of this.”"}, {"word": "Worst case scenario", "definition": "the worst possible outcome of several possibilities", "phrase": "Monica: “All right, worst case scenario is we borrow some money from my parents.”"}, {"word": "Rookie mistake", "definition": "the act when someone makes a mistake that is so stupid, he is considered a rookie at it", "phrase": "Phoebe: “That was a test and you just failed.” Monica: “Damn it! Rookie mistake!”"}, {"word": "Look on the bright side", "definition": "to be optimistic in spite of the difficulties", "phrase": "Chandler to Phoebe: “But look at the bright side, at least you don’t have to live with this ugly chair.”"}, {"word": "Coming out of the closet", "definition": "revealing one’s secret or admitting to others that you’re gay", "phrase": "Ross to Chandler: “You got 60 responses just for coming out of the closet.”"}, {"word": "In good standing", "definition": "with good reputation", "phrase": "Phoebe to Chandler: “Tell them that in 2 weeks I will again be a masseuse in good good standing.”"}, {"word": "Live on the edge", "definition": "to have a type of life when you are involved in exciting or dangerous activities", "phrase": "Ross: “This is what happens when people live on the edge (about Chandler not having travel insurance).”"}, {"word": "In no time", "definition": "very fast", "phrase": "Ross: “We’ll make our money back in no time.” Rachel saw Joe in a love scene and then dreamed about him. Rachel thinks she's in love with Joe. Ross and Chandler go to Vermont and get a lot of free hotel stuff to get their money back. Phoebe plays inappropriate music near Monica’s restaurant. Monica and Phoebe fight over Phoebe's music. Friendship vs. Professionalism Saying the truth to a friend Infatuation Crush Traveling Hotels Restaurants"}, {"word": "Be out of one’s system", "definition": "get rid of the wish or emotion", "phrase": "Rachel jumping: “Soap opera roof party!... And it’s out of my system.”"}, {"word": "Fill in for someone", "definition": "to substitute for someone or something; to take the place of someone or something", "phrase": "Phoebe: “Oh, no. Listen, is there someone who can fill in for me?”"}, {"word": "Need a hand", "definition": "to need help", "phrase": "Janice to Chandler in a hospital: “Just let me know if you need a hand.” Joe takes Charlie to the Metropolitan Museum of Art. Phoebe works at a corporate massage place and Rachel comes there for a massage. Chandler and Monica go to take a fertility test. Not being able to have a baby Sightseeing in NYC Principles in life Friendship vs Dating (Ross helps Joe even though he likes Charlie)"}, {"word": "Be hung up on someone", "definition": "to be obsessed with someone or something; devoted to someone or something", "phrase": "Rachel to Phoebe about Mike: “You’re totally hung up on him.”"}, {"word": "Sweep somebody off one’s feet", "definition": "to completely woo someone, usually unexpectedly", "phrase": "Rachel: “Just the way se waltzed in here, all smart and tall and just swept Joe off his feet.”"}, {"word": "Pull some strings", "definition": "to use the power or influence one has over others, especially people of importance, to get what one wants or to help someone else", "phrase": "Ross: “I had to pull some strings but I was able to get everyone passes to the entire conference.”"}, {"word": "Be crazy about someone", "definition": "to be very enthusiastically fond of someone or something", "phrase": "Phoebe: “I’m crazy about David and we’re having so much fun together.”"}, {"word": "Read into it", "definition": "obsessed with someone or something; devoted to someone or something", "phrase": "Chandler: \"I wouldn’t read too much into it.\""}, {"word": "Float an idea", "definition": "to suggest something informally to see if people accept", "phrase": "Ross to Charlie: “And then you float an idea of a threesome.”"}, {"word": "Blow someone away", "definition": "to overwhelm someone; to amaze someone", "phrase": "Charlie: “You blew them away.”"}, {"word": "On the bright side", "definition": "considering the positive aspects of a situation", "phrase": "Phoebe: \"On the bright side, now we won’t have to see al these paleontologists with their shirts off.\""}, {"word": "Have a lot on one’s plate", "definition": "to have a great deal to cope with", "phrase": "Ross: “I’ve kind of got a lot on my plate right now.”"}, {"word": "A ping", "definition": "pong game", "phrase": ""}, {"word": "Edge somebody out", "definition": "to displace or surpass someone or something gradually", "phrase": "Joe: “I’m going to edge out Chandler.”"}, {"word": "Be straight with somebody", "definition": "to be honest", "phrase": "Phoebe to Precious: “I’ll be straight with you.”"}, {"word": "Hair", "definition": "style", "phrase": ""}, {"word": "Go nuts", "definition": "become extremely angry, excited, or mentally ill", "phrase": "Rachel to Ross: “You have every right to go nuts!”"}, {"word": "Show (something) off", "definition": "to display a person, thing, or ability of which one is very proud, often as a means of seeking attention", "phrase": "Chandler: “Sure, then you should get a miniskirt so that you could really show it off.”"}, {"word": "Hold up well", "definition": "to endure; to last a long time", "phrase": "Phoebe: “You would not hold up well under torture.” Rachel and Joe can’t go further than kissing. Monica and Phoebe avoid meeting Amanda who came from Britain and is obnoxious. Ross tried to get tanned but ended up overdoing it."}, {"word": "Take a hint", "definition": "to understand, accept, or act upon a message or direction that has been insinuated or communicated indirectly", "phrase": "Monica to Chandler: “You can take a hint!”"}, {"word": "Sharp as a tack", "definition": "mentally acute, very witty", "phrase": "Amy: “You’re not Rachel.” Ross to Amy: ”Still sharp as a tack.”"}, {"word": "Pick your battles", "definition": "to choose not to participate in unimportant, or overly difficult arguments, saving one's strength instead for those that will be of greater importance or where one has a greater chance of success", "phrase": "Phoebe: “So, you’ve got to pick your battles (about not keeping her ugly picture).”"}, {"word": "Art (work of art", "definition": "Phoebe’s)", "phrase": ""}, {"word": "Make it through something", "definition": "to persevere, survive a difficulty", "phrase": "Ross to Rachel: “And you made it through that (when she was telling about her swing incident)?”"}, {"word": "Bring something up", "definition": "to mention or introduce something into discussion", "phrase": "Adoption lady: \"I’m sorry I brought it up.\""}, {"word": "Put words into someone’s mouth", "definition": "say or suggest that somebody has said something", "phrase": "Ross to Chandler: “She puts words in your mouth.”"}, {"word": "Have got what it takes", "definition": "to have all the possibility to win or succeed", "phrase": "Phoebe: “But Emma’s got what it takes, she could go all the way.”"}, {"word": "On top of something", "definition": "in addition to something", "phrase": "Erica: “It’s enough that you’re a doctor. But on top of it, you’re married to a reverend?”"}, {"word": "Two", "definition": "way street - a reciprocal situation", "phrase": ""}, {"word": "This is a two", "definition": "way street.”", "phrase": ""}, {"word": "Get a room", "definition": "humorous, used to instruct a couple to stop displaying physical affection in public", "phrase": "Monica : “This cake is amazing!” Ross: “Oh, my God, get a room!”"}, {"word": "This ride’s closing", "definition": "urban idiom – humorous, something or somebody is no longer available", "phrase": "Phoebe: “Sorry guys, this ride is closing (about her getting married and having a bachelorette party).”"}, {"word": "Pass the torch", "definition": "share your gift, delegate, allow others to continue your work", "phrase": "Phoebe to the stripper: “Share your gift, pass the torch.” Ross and Chandler are at the school reunion. Joe is at a TV game, called “Pyramid”. Phoebe has an old stripper come to her bachelorette party. Showing younger Rachel and Monica come to the college party"}, {"word": "Lesser of two evils", "definition": "the less offensive of two undesirable options", "phrase": "Rachel to Ross: “Oh, you’re lesser of two evils.”"}, {"word": "Stress", "definition": "management", "phrase": ""}, {"word": "Money down the drain", "definition": "a waste of money", "phrase": "Rachel: “Oh, wow. That ear and nose hair trimmer I got him was just money down the drain (looking at her sedated father).”"}, {"word": "Keep an eye on somebody", "definition": "watch somebody", "phrase": "Monica to Chandler: “Would we treat him any differently?”"}, {"word": "Be off the table", "definition": "to be withdrawn or no longer available, as for consideration, acceptance, discussion, etc", "phrase": "Ross: “That’s right, sex is off the table.” Later, Rachel: “Ross, just so you know, with us it’s never off the table.”"}, {"word": "What are the odds?", "definition": "that is or was incredible; that is or was extremely unlikely", "phrase": "Ross to Rachel about the job: “You too? What are the odds?”"}, {"word": "Heads", "definition": "up - a preliminary notice, especially of future difficulty, trouble, or danger; a warning", "phrase": "Ross: “A little heads-up would have been nice.”"}, {"word": "Get on board", "definition": "to get someone to be in agreement with; ready or willing to participate", "phrase": "Rachel: “You guys, it’s really important to me. It means a lot if you could try to get on board.”"}, {"word": "Make a point", "definition": "to state an item of importance", "phrase": "Phoebe: “Ok, fine. You made your point. Can you please be Mike Hannigan again?”"}, {"word": "Take a shot", "definition": "to try to do something", "phrase": ""}, {"word": "Drop the ball", "definition": "fail, lose the opportunity", "phrase": ""}, {"word": "On the fence", "definition": "undecided as to which of two sides to support; uncommitted or neutral", "phrase": "Janice: “I was on the fence but knowing that you two are going to be our neighbors? Now we have to get it.”"}, {"word": "Give someone credit", "definition": "to give someone praise or recognition", "phrase": "Ross: “Or maybe I’m just not giving you enough credit. I mean it is difficult to say good-bye to five people.”"}, {"word": "Work things out", "definition": "to improve one's state gradually by solving a series of problems", "phrase": "Joe to Ross: “How did it go with you guys last night?” Ross: “We worked things out.”"}, {"word": "Saying", "definition": "I love you", "phrase": ""}, {"word": "Blow something wide open", "definition": "expose corrupt practices or scheme", "phrase": "Phoebe: “Jack Bing, Morning Gazette, I’m gonna blow this story wide open.”"}];
+
+  function importFriendsIdioms() {
+    const existing = new Set(entries.map(e => e.word.toLowerCase().trim()));
+    let added = 0;
+    const now = new Date().toISOString();
+    const newEntries = [];
+    for (const item of FRIENDS_IDIOMS) {
+      const key = item.word.toLowerCase().trim();
+      if (!existing.has(key)) {
+        newEntries.push({
+          id: newId(),
+          word: item.word,
+          type: 'expression',
+          definition: item.definition,
+          phrase: item.phrase,
+          status: 'learning',
+          date: now,
+          source: 'Learn Idioms with Friends'
+        });
+        existing.add(key);
+        added++;
+      }
+    }
+    if (added === 0) {
+      showToast('All Friends idioms are already in your wordbank!');
+      return;
+    }
+    entries = entries.concat(newEntries);
+    save();
+    render();
+    showToast(`✨ Added ${added} idioms from Learn Idioms with Friends!`);
+    document.getElementById('import-btn').textContent = `✔ ${added} imported`;
+    document.getElementById('import-btn').disabled = true;
+  }
+  // ---- End Friends Idioms Import ----
+
+  // ---- Real Life 101 Import ----
+  const REALLIFE_IDIOMS = [{"word":"Be turned on by (sth)","definition":"To be sexually provoked by something","phrase":"She was turned on by the firemen"},{"word":"Crash on (sb's) couch","definition":"To sleep at someone's house (on their couch/sofa)","phrase":"Max is crashing on our couch until he can find a new apartment"},{"word":"Drift apart (from sb)","definition":"To become more distant (in a relationship)","phrase":"They got a divorce after drifting apart during their five years of marriage"},{"word":"Get screwed","definition":"To get tricked; to get a bad deal","phrase":"He got screwed on the price of his new car"},{"word":"Give (sb) a break","definition":"Cut someone some slack, go easy on someone","phrase":"Give her a break, she just got fired"},{"word":"Over and over","definition":"Repeatedly","phrase":"He kept playing the song over and over."},{"word":"To hell with (sb)","definition":"Expression used to say you don't care about someone or wish bad things will happen to them","phrase":"To hell with what they think"},{"word":"What the hell!","definition":"An intensive of just exclaiming what!","phrase":"What the hell are you doing?"},{"word":"Are you kidding?","definition":"An expression of disbelief","phrase":"Messi is injured, are you kidding?"},{"word":"Have a crush on (sb)","definition":"To have romantic intentions towards someone","phrase":"I had a crush on you in high school"},{"word":"Be a thing","definition":"To be a romantic couple","phrase":"Did you know Brad Pitt and Angelina Jolie were a thing?"},{"word":"Chances are","definition":"Likely","phrase":"I'll wait until next weekend to go fishing, chances are it will rain all weekend"},{"word":"Cheap Shot","definition":"Unfair attack on a vulnerable person","phrase":"Telling her she had grey hair on her birthday was a cheap shot"},{"word":"Get one's way","definition":"To have a situation end in the way one desires","phrase":"My brother always gets his way"},{"word":"Have a thing for (sb)","definition":"To be attracted to someone, have a crush on someone","phrase":"I had a thing for her until I found out she was difficult"},{"word":"Roll with the Punches","definition":"To adapt to a difficult situation, to go with the flow","phrase":"She got fired, but decided to roll with the punches and start her own company"},{"word":"Shoot for the stars","definition":"To aim for big goals in life","phrase":"Believe in yourself and you can shoot for the stars"},{"word":"Stomp on someone's heart","definition":"To break someone's heart in a cruel way","phrase":"She stomped on his heart when she left him at the altar"},{"word":"Word of advice","definition":"A piece of advice","phrase":"Let me give you a word of advice, don't drink so much at weddings."},{"word":"Cushion the blow","definition":"To decrease the strength of the impact of something","phrase":"He gave me a 1000 dollar bonus, which cushioned the blow of getting fired"},{"word":"Cut it out!","definition":"Said when we want someone to stop doing something","phrase":"I hate when you make that noise, cut it out!"},{"word":"I've had it (with sth)","definition":"To be sick of something, fed up with something","phrase":"I've had it with studying boring grammar textbooks!"},{"word":"Know a thing or two","definition":"To know a lot about something","phrase":"He knows a thing or two about computers."},{"word":"Let one's guard down","definition":"To stop being cautious","phrase":"Don't let your guard down in London, otherwise you might get pickpocketed"},{"word":"Slim Chance","definition":"A small possibility of something happening","phrase":"Slim chance you'll win the lottery"},{"word":"Can't stand (sb/sth)","definition":"Not be able to tolerate something or someone","phrase":"I can't stand politics"},{"word":"Bring (sb) down","definition":"To make someone sad","phrase":"Don't let the rain bring you down"},{"word":"Glass is half empty","definition":"Said of someone who is pessimistic","phrase":"He'll never get anywhere in life if he always sees the glass as half empty"},{"word":"Have a good time","definition":"To enjoy oneself","phrase":"Did you have a good time at the party?"},{"word":"Never mind","definition":"Forget about it, don't worry about it, it doesn't matter","phrase":"Can you grab me a spoon? Never mind, I'll get it."},{"word":"Take one's mind off","definition":"Distract someone","phrase":"A funny movie will take your mind off the break up"},{"word":"Nod off","definition":"Fall asleep","phrase":"She kept nodding off during the movie"},{"word":"Blow one's mind","definition":"To surprise immensely","phrase":"It blows my mind how hot it is today"},{"word":"Blow (sb) off","definition":"To ignore someone, to not show up for a prearranged engagement","phrase":"He totally blew me off, that's so rude!"},{"word":"Gang up on (sb)","definition":"To act in a group to attack somebody verbally or physically","phrase":"They all ganged up on him in the meeting because they didn't like his idea"},{"word":"Get up the courage","definition":"To build one's confidence in order to do something","phrase":"I had to get up the courage to try crickets in China"},{"word":"Go on a date","definition":"To do something with someone with romantic intentions","phrase":"Do you want to go on a date with me?"},{"word":"Go out with (sb)","definition":"To date somebody","phrase":"They've been going out for about a year"},{"word":"Make eyes at (sb)","definition":"To look at a person with desire","phrase":"He was making eyes at her all evening and finally asked her what her name was."},{"word":"Break up with (sb)","definition":"To end a relationship with somebody","phrase":"We broke up after 3 years of dating"},{"word":"Would kill for (sth)","definition":"Used to express that someone would love to have or do something","phrase":"I would kill for a chocolate ice cream right now"},{"word":"Change one's mind","definition":"To change one's opinion about something","phrase":"That documentary made me change my mind about vegetarianism"},{"word":"For the hell of it","definition":"For no particular reason, just for fun","phrase":"We're going to go to the beach this weekend just for the hell of it"},{"word":"Hard to tell","definition":"Difficult to distinguish or see the difference","phrase":"It's hard to tell if you're joking or not"},{"word":"Have a shot","definition":"To have or get the opportunity to do something","phrase":"I had a shot at getting her number, but I blew it"},{"word":"It's worth it","definition":"The effort put into something is justified by the benefit received","phrase":"Going to Machu Picchu is expensive, but it's totally worth it!"},{"word":"Opening Line","definition":"First comment used to start a conversation with someone","phrase":"That is the worst opening line I've ever heard"},{"word":"Out of your league","definition":"Said of someone who is too attractive for you to get a date with","phrase":"It's not worth trying, she's out of my league"},{"word":"Friend Zone","definition":"Said of the situation in which you like someone romantically, but they just consider you a friend","phrase":"If you go shopping with a girl you're not dating you're definitely in the friend zone"},{"word":"On second thought","definition":"Said when someone changes their mind or opinion","phrase":"On second thought, I'll have the salmon instead of the steak."},{"word":"On top of the world","definition":"Extremely happy","phrase":"She was on top of the world after her promotion"},{"word":"Scared to death","definition":"Extremely scared","phrase":"I'm scared to death of heights"},{"word":"No way!","definition":"Absolutely no, no chance","phrase":"No way I'm going on a date with her"},{"word":"Miss out on (sth)","definition":"To lose a good opportunity or experience","phrase":"You're going to miss out on my birthday party"},{"word":"Drive (sb) crazy","definition":"To make someone impatient, annoyed, and frustrated","phrase":"You drive me crazy when you make that annoying noise!"},{"word":"Pass (away)","definition":"To die","phrase":"Her grandmother passed away last year"},{"word":"Set (sb) up with (sb)","definition":"To introduce two people for a romantic date","phrase":"She set me up with her sister and now we're married"},{"word":"Get along","definition":"To have a good relationship","phrase":"I used to fight a lot with my brother when we were kids, but now we get along fine."},{"word":"Look into (sth)","definition":"To investigate something","phrase":"I'm going to look into spending Christmas in the Caribbean"},{"word":"Pass out","definition":"To faint","phrase":"She passes out every time she sees blood"},{"word":"Pick on (sb)","definition":"To treat someone unfairly, to bully","phrase":"Don't pick on your little brother!"},{"word":"Bust one's ass","definition":"To work really hard on something","phrase":"I've been busting my ass making dinner for you"},{"word":"Get an advance","definition":"To get your salary before it's due","phrase":"Could I get an advance so I can buy Christmas gifts early?"},{"word":"Break free","definition":"To escape","phrase":"The prisoners had broken free before the guards noticed."},{"word":"I'll tell you what","definition":"Used to offer a suggestion","phrase":"I'll tell you what, if it doesn't rain this weekend, why don't we go fishing?"},{"word":"Be familiar with (sth)","definition":"To have a general understanding or knowledge about something","phrase":"I'm familiar with that yoga technique"},{"word":"Chip in","definition":"To contribute with money or help","phrase":"If we all chip in moving her furniture won't take long"},{"word":"Is killing me","definition":"Something is causing a great amount of pain or anxiety","phrase":"My back has been killing me ever since I went skiing"},{"word":"All expenses paid","definition":"Free, with everything covered","phrase":"She got an all expenses paid trip to Bali!"},{"word":"Drag one's feet","definition":"To do something lazily or slowly","phrase":"You have to stop dragging your feet and make the life you've always wanted"},{"word":"For your information","definition":"Just so you know, usually in contradiction to someone's assumption","phrase":"For your information, I speak English excellently"},{"word":"Have a blast","definition":"Have a really good time","phrase":"They had a blast at the festival"},{"word":"Take a break","definition":"Have a rest","phrase":"I'll take a break after I've finished my presentation"},{"word":"Be sick of (sth)","definition":"Not able to tolerate something any more","phrase":"I'm sick of corrupt politicians"},{"word":"Be cool","definition":"To be calm and relaxed, not giving away anything","phrase":"Meditating helps you be cool and collected even in stressful situations"},{"word":"Beam with pride","definition":"To have an obvious look of pride on your face","phrase":"She was beaming with pride as she accepted the award"},{"word":"Break someone's heart","definition":"Overwhelm someone with sadness, often someone who you are in love with","phrase":"She completely broke his heart when she asked for a divorce"},{"word":"Have issues","definition":"To have problems that you need to resolve","phrase":"We used to have issues but we resolved them in counseling"},{"word":"Spell it out","definition":"To explain something simply","phrase":"I'm not sure I understand what you mean, could you spell it out for me?"},{"word":"Way too","definition":"Used to give something greater emphasis","phrase":"That bed is way too big to fit in my room"},{"word":"Out of sorts","definition":"Not feeling well, grumpy, irritated","phrase":"Sorry I yelled, I've been feeling out of sorts."},{"word":"I've been better","definition":"Another way to say that you're feeling badly","phrase":"I have two exams this week so I've been better"},{"word":"Kick someone's butt","definition":"To beat someone at something easily","phrase":"She could kick anyone's butt"},{"word":"Leave little to the imagination","definition":"Something is really apparent, often used to reference something revealing","phrase":"Your new bathing suit doesn't leave much to the imagination"},{"word":"Not see (sth) coming","definition":"Used when something unexpected happens","phrase":"Costa Rica almost won the world cup; I did not see that coming."},{"word":"Swear off sth","definition":"To give something up, to not do something anymore","phrase":"Don't swear off of chocolate, just eat less of it"},{"word":"Things get ugly","definition":"Said when a situation gets bad or chaotic","phrase":"When she caught him cheating things got ugly."},{"word":"So what?","definition":"Used to show that something isn't important","phrase":"So what if it's your friend's birthday? You can't leave work early!"}];
+
+  function importRealLifeIdioms() {
+    const existing = new Set(entries.map(e => e.word.toLowerCase().trim()));
+    let added = 0;
+    const now = new Date().toISOString();
+    const newEntries = [];
+    for (const item of REALLIFE_IDIOMS) {
+      const key = item.word.toLowerCase().trim();
+      if (!existing.has(key)) {
+        newEntries.push({
+          id: newId(),
+          word: item.word,
+          type: 'expression',
+          definition: item.definition,
+          phrase: item.phrase,
+          status: 'learning',
+          date: now,
+          source: 'Real Life 101'
+        });
+        existing.add(key);
+        added++;
+      }
+    }
+    if (added === 0) {
+      showToast('All Real Life 101 expressions are already in your wordbank!');
+      return;
+    }
+    entries = entries.concat(newEntries);
+    save();
+    render();
+    showToast(`✨ Added ${added} expressions from Real Life 101!`);
+    document.getElementById('import-btn2').textContent = `✔ ${added} imported`;
+    document.getElementById('import-btn2').disabled = true;
+  }
+  // ---- End Real Life 101 Import ----
+
+  // ---- Read Aloud ----
+  let readAloudActive = false;
+  let readAloudTimeout = null;
+
+  function toggleReadPanel() {
+    const rp = document.getElementById('read-panel');
+    const vp = document.getElementById('voice-panel');
+    vp.classList.remove('open');
+    rp.classList.toggle('open');
+  }
+
+  document.getElementById('read-pause').addEventListener('input', function() {
+    document.getElementById('pause-val').textContent = this.value + ' s';
+  });
+
+  function startReadAloud() {
+    if (readAloudActive) return;
+    const readWord = document.getElementById('read-word').checked;
+    const readDef = document.getElementById('read-def').checked;
+    const readPhrase = document.getElementById('read-phrase').checked;
+    if (!readWord && !readDef && !readPhrase) {
+      showToast('Please check at least one item to read.');
+      return;
+    }
+    const pauseSec = parseFloat(document.getElementById('read-pause').value);
+    // Get only 'learning' entries
+    const toRead = entries.filter(e => e.status === 'learning');
+    if (toRead.length === 0) {
+      showToast('No learning entries to read.');
+      return;
+    }
+    readAloudActive = true;
+    document.getElementById('read-play-btn').style.display = 'none';
+    document.getElementById('read-stop-btn').style.display = '';
+    readSequence(toRead, 0, readWord, readDef, readPhrase, pauseSec);
+  }
+
+  function stopReadAloud() {
+    readAloudActive = false;
+    if (readAloudTimeout) { clearTimeout(readAloudTimeout); readAloudTimeout = null; }
+    window.speechSynthesis.cancel();
+    document.getElementById('read-play-btn').style.display = '';
+    document.getElementById('read-stop-btn').style.display = 'none';
+    document.getElementById('read-status').textContent = 'Stopped.';
+  }
+
+  function readSequence(list, idx, readWord, readDef, readPhrase, pauseSec) {
+    if (!readAloudActive || idx >= list.length) {
+      if (readAloudActive) {
+        document.getElementById('read-status').textContent = `Done! Read ${list.length} entries.`;
+      }
+      stopReadAloud();
+      return;
+    }
+    const entry = list[idx];
+    document.getElementById('read-status').textContent = `${idx + 1} / ${list.length}: ${entry.word}`;
+
+    const parts = [];
+    if (readWord) parts.push(entry.word);
+    if (readDef && entry.definition) parts.push(entry.definition);
+    if (readPhrase && entry.phrase) parts.push(entry.phrase);
+
+    const voice = getSelectedVoice();
+    const rate = parseFloat(document.getElementById('voice-rate').value);
+    const pitch = parseFloat(document.getElementById('voice-pitch').value);
+
+    let partIdx = 0;
+    function speakNext() {
+      if (!readAloudActive) return;
+      if (partIdx >= parts.length) {
+        readAloudTimeout = setTimeout(() => {
+          readSequence(list, idx + 1, readWord, readDef, readPhrase, pauseSec);
+        }, pauseSec * 1000);
+        return;
+      }
+      const utt = new SpeechSynthesisUtterance(parts[partIdx]);
+      if (voice) utt.voice = voice;
+      utt.rate = rate;
+      utt.pitch = pitch;
+      utt.onend = () => {
+        partIdx++;
+        if (!readAloudActive) return;
+        readAloudTimeout = setTimeout(speakNext, 400);
+      };
+      utt.onerror = () => { partIdx++; speakNext(); };
+      window.speechSynthesis.speak(utt);
+    }
+    speakNext();
+  }
+  // ---- End Read Aloud ----
+
+</script>
+</body>
+</html>
